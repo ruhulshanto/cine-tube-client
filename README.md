@@ -65,7 +65,7 @@ A modern Movie & Series Rating and Streaming platform where users can explore, r
 ## ⚙️ Installation
 
 ```bash
-git clone https://github.com/your-username/client-repo.git
+git clone [https://github.com/your-username/client-repo.git](https://github.com/ruhulshanto/cine-tube-client.git)
 cd client-repo
 pnpm install
 pnpm dev
