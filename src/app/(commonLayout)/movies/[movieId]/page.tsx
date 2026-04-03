@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { FullScreenLoader } from "@/components/ui/spinner";
 import { MovieHero } from "@/components/movies/MovieHero";
 import { MovieReviews } from "@/components/movies/MovieReviews";
 import { useMovieAccess } from "@/hooks/useMovieAccess";
@@ -71,7 +72,7 @@ export default function MovieDetailsPage() {
   // Only check if user is logged in and movie is NOT free
   const { hasAccess } = useMovieAccess(movieId as string, movie?.pricingType || "");
 
-  if (movieLoading) return <div className="flex justify-center items-center min-h-[50vh]"><Loader2 className="w-8 h-8 animate-spin" /></div>;
+  if (movieLoading) return <FullScreenLoader className="min-h-[70vh]" label="Loading movie details..." />;
   if (!movie) return <div className="text-center py-20 text-zinc-400">Movie not found</div>;
 
   return (

@@ -17,6 +17,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -508,8 +509,8 @@ export function MovieReviews({
             >
               {isReviewing ? (
                 <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Posting…
+                  <Spinner size="sm" className="text-white" />
+                  Submitting…
                 </>
               ) : (
                 <>

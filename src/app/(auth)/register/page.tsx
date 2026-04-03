@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { User, Mail, Lock, Loader2, ChevronRight } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -212,7 +213,9 @@ export default function RegisterPage() {
           disabled={isPending}
         >
           {isPending ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <span className="flex items-center gap-2">
+              <Spinner size="sm" className="text-white" /> Loading...
+            </span>
           ) : (
             <span className="flex items-center gap-2">
               Sign Up

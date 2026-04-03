@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 
@@ -75,6 +75,7 @@ type MovieFormProps = {
 
 export function MovieForm({ mode, movieId, initialMovie }: MovieFormProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const form = useForm<AdminMovieFormValues>({
     defaultValues: mode === "edit" && initialMovie ? movieToFormValues(initialMovie) : defaultEmpty,
   });
@@ -91,6 +92,8 @@ export function MovieForm({ mode, movieId, initialMovie }: MovieFormProps) {
     mutationFn: (fd: FormData) => createMovieAdmin(fd),
     onSuccess: () => {
       toast.success("Movie created");
+      queryClient.invalidateQueries({ queryKey: ["admin-movies"] });
+      queryClient.invalidateQueries({ queryKey: ["movie"] });
       router.push("/dashboard/admin/movies");
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
@@ -102,6 +105,9 @@ export function MovieForm({ mode, movieId, initialMovie }: MovieFormProps) {
     mutationFn: ({ id, fd }: { id: string; fd: FormData }) => updateMovieAdmin(id, fd),
     onSuccess: () => {
       toast.success("Movie updated");
+      queryClient.invalidateQueries({ queryKey: ["admin-movies"] });
+      queryClient.invalidateQueries({ queryKey: ["movie-admin", movieId] });
+      queryClient.invalidateQueries({ queryKey: ["movie"] });
       router.push("/dashboard/admin/movies");
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {

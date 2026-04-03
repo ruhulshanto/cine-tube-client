@@ -13,6 +13,7 @@ import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
 import { GENRE_OPTIONS } from "@/lib/adminMovie.schemas";
 import { publicSelectClass } from "@/lib/publicFormStyles";
 
@@ -534,11 +535,16 @@ function MoviesPageContent() {
           ))}
         </div>
       ) : movies.length > 0 ? (
-        <>
+        <div className="relative">
+          {isFetching && isPlaceholderData && (
+            <div className="absolute inset-0 z-10 flex min-h-[40vh] items-center justify-center pointer-events-none">
+              <Spinner size="xl" className="drop-shadow-2xl" />
+            </div>
+          )}
           <div
             className={cn(
-              "grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-10 xl:grid-cols-5 transition-opacity duration-200",
-              isFetching && isPlaceholderData && "pointer-events-none opacity-55"
+              "grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-10 xl:grid-cols-5 transition-all duration-300",
+              isFetching && isPlaceholderData && "pointer-events-none opacity-40 blur-sm scale-[0.99]"
             )}
           >
             {movies.map((movie, index) => (
@@ -553,7 +559,7 @@ function MoviesPageContent() {
             isFetching={isFetching}
             onPageChange={handlePageChange}
           />
-        </>
+        </div>
       ) : (
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-white/10 py-24 glass-morphism">
           <EmptyState

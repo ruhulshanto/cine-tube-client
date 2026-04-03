@@ -13,6 +13,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Mail, Lock, Loader2, ChevronRight, Check } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -133,7 +134,9 @@ export default function LoginPage() {
           disabled={isPending}
         >
           {isPending ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <span className="flex items-center gap-2">
+              <Spinner size="sm" className="text-white" /> Loading...
+            </span>
           ) : (
             <span className="flex items-center gap-2">
               Sign In

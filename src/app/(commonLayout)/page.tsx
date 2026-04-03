@@ -20,8 +20,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { FullScreenLoader } from "@/components/ui/spinner";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAutoBrowseToMovies } from "@/hooks/useAutoBrowseToMovies";
 import { buildPinnedTrending, pickFavoriteFirst } from "@/lib/home/pinnedTrending";
@@ -159,14 +160,20 @@ export default function Home() {
     ],
   });
 
+  const isPageLoading = trendingLoading || featuredCuratedLoading || topRatedLoading;
+
+  if (isPageLoading) {
+    return (
+      <div className="bg-[#0b0b0b] min-h-screen pt-24">
+        <FullScreenLoader label="Loading cinematic experiences..." />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#0b0b0b] min-h-screen">
       {/* 🚀 THE BILLBOARD: First Impression */}
-      {trendingLoading ? (
-        <div className="w-full h-[90vh] bg-white/5 animate-pulse rounded-b-[4rem]" />
-      ) : (
-        <HomeBillboard movie={billboardMovie!} />
-      )}
+      <HomeBillboard movie={billboardMovie!} />
 
       {/* 🎞️ MOVIE BROWSING: The Cinematic Journey */}
       <div className="relative z-20 -mt-24 space-y-4">
