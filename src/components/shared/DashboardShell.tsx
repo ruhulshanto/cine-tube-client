@@ -1,12 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardSidebarContent } from "@/components/shared/DashboardSidebar";
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (mobileOpen) {
@@ -36,7 +42,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Mobile drawer */}
-      {mobileOpen && (
+      {mounted && mobileOpen && createPortal(
         <div className="fixed inset-0 z-[95] md:hidden" role="dialog" aria-modal="true" aria-label="Dashboard menu">
           <button
             type="button"
@@ -64,7 +70,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <DashboardSidebarContent onNavigate={() => setMobileOpen(false)} />
             </div>
           </aside>
-        </div>
+        </div>,
+        document.body
       )}
 
       <main className="relative min-w-0 flex-1 bg-gradient-to-b from-[#0b0b0b] via-black/90 to-zinc-950">
