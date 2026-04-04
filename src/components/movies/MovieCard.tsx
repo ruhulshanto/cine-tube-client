@@ -1,15 +1,36 @@
 "use client"
 
 import { Movie } from "@/types/movie.types";
-import { Star, Eye } from "lucide-react";
+import { Star, Eye, CheckCircle2, PlayCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useUserAccess } from "@/hooks/useUserAccess";
 
 export function MovieCard({ movie }: { movie: Movie }) {
+  const { hasActiveSubscription, purchasedMovieIds, rentedMovieIds, isLoading } = useUserAccess();
+
   const isPaid = movie.pricingType === "PREMIUM" || movie.pricingType === "RENTAL";
-  const isRental = movie.pricingType === "RENTAL";
+  const isAvailableForRent = movie.pricingType === "RENTAL";
+  
+  const isPurchased = movie.id ? purchasedMovieIds.has(movie.id) : false;
+  const isRented = movie.id ? rentedMovieIds.has(movie.id) : false;
+  const hasAccessViaSubscription = hasActiveSubscription && isPaid;
+  const isFree = movie.pricingType === "FREE";
+
+  const hasAccess = isFree || isPurchased || isRented || hasAccessViaSubscription;
+
+  // Badge logic
+  let badgeText: string = movie.pricingType || "FREE";
+  let badgeColor = isPaid 
+    ? "bg-gradient-to-r from-amber-600/90 to-amber-400/80 text-white border-amber-300/40" 
+    : "bg-white/10 text-white/80 border-white/20";
+    
+  if (hasAccess && isPaid) {
+    badgeText = isPurchased ? "PURCHASED" : isRented ? "RENTED" : "PREMIUM ACCESS";
+    badgeColor = "bg-gradient-to-r from-emerald-600/90 to-emerald-400/80 text-white border-emerald-300/40";
+  }
 
   return (
     <motion.div 
@@ -17,9 +38,11 @@ export function MovieCard({ movie }: { movie: Movie }) {
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       className={cn(
         "group relative aspect-[2/3] rounded-[2.5rem] overflow-hidden glass-morphism transition-all duration-500 shadow-2xl hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] border-2",
-        isPaid 
-          ? "border-amber-500/20 hover:border-amber-500/80 hover:shadow-[0_0_40px_rgba(245,158,11,0.3)]" 
-          : "border-white/5 hover:border-primary/50 hover:shadow-[0_0_40px_rgba(229,9,20,0.3)]"
+        hasAccess && isPaid
+          ? "border-emerald-500/30 hover:border-emerald-400/80 hover:shadow-[0_0_40px_rgba(52,211,153,0.3)]"
+          : isPaid 
+            ? "border-amber-500/20 hover:border-amber-500/80 hover:shadow-[0_0_40px_rgba(245,158,11,0.3)]" 
+            : "border-white/5 hover:border-primary/50 hover:shadow-[0_0_40px_rgba(229,9,20,0.3)]"
       )}
     >
       {/* Background Image */}
@@ -35,14 +58,13 @@ export function MovieCard({ movie }: { movie: Movie }) {
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#0b0b0b] via-[#0b0b0b]/60 to-transparent opacity-90 transition-opacity duration-500" />
       
       {/* Pricing Badge (Top Left) */}
-      <div className="absolute top-6 left-0 z-20">
+      <div className="absolute top-6 left-0 z-20 flex items-center">
          <div className={cn(
-           "px-4 py-1.5 rounded-r-full text-[10px] font-black uppercase tracking-[0.2em] shadow-xl backdrop-blur-md border border-l-0",
-           isPaid 
-            ? "bg-gradient-to-r from-amber-600/90 to-amber-400/80 text-white border-amber-300/40" 
-            : "bg-white/10 text-white/80 border-white/20"
+           "px-4 py-1.5 rounded-r-full text-[10px] font-black uppercase tracking-[0.2em] shadow-xl backdrop-blur-md border border-l-0 flex items-center gap-1.5",
+           badgeColor
          )}>
-           {movie.pricingType || "FREE"}
+           {hasAccess && isPaid && <CheckCircle2 className="w-3 h-3" />}
+           {badgeText}
          </div>
       </div>
 
@@ -75,15 +97,18 @@ export function MovieCard({ movie }: { movie: Movie }) {
         <div className="mt-4">
           <Link href={movie.id ? `/movies/${movie.id}` : "#"} className="block">
             <Button 
-              variant={isPaid ? "outline" : "netflix"} 
+              variant={hasAccess ? "netflix" : isPaid ? "outline" : "netflix"} 
               className={cn(
-                "w-full h-14 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] shadow-xl transition-all duration-300",
-                isPaid 
-                  ? "bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-white" 
-                  : ""
+                "w-full h-14 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] shadow-xl transition-all duration-300 gap-2",
+                hasAccess && isPaid
+                  ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/25"
+                  : !hasAccess && isPaid 
+                    ? "bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-white" 
+                    : ""
               )}
             >
-              {isRental ? "Rent Now" : isPaid ? "Unlock Premium" : "Play Free"}
+              {hasAccess && isPaid && <PlayCircle className="w-4 h-4" />}
+              {hasAccess ? "Play Now" : isAvailableForRent ? "Rent Now" : isPaid ? "Unlock Premium" : "Play Free"}
             </Button>
           </Link>
         </div>

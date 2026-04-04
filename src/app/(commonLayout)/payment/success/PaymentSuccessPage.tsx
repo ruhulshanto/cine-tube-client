@@ -1,33 +1,60 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { CheckCircle2, ArrowRight, Film, CreditCard, Sparkles, Loader2 } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { CheckCircle2, ArrowRight, Film, CreditCard, Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
+import { httpClient } from "@/lib/axios/httpClient";
+import { toast } from "sonner";
 
 export default function PaymentSuccessPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const sessionId = searchParams.get("session_id");
-  const [countdown, setCountdown] = useState(10);
+  const queryClient = useQueryClient();
 
-  // Progress bar simulation while webhook is potentially still processing
-  const [isSyncing, setIsSyncing] = useState(true);
+  const [status, setStatus] = useState<"VERIFYING" | "COMPLETED" | "ERROR">("VERIFYING");
+  const [retryCount, setRetryCount] = useState(0);
+
+  const verifyPayment = useCallback(async () => {
+    if (!sessionId) return;
+    
+    try {
+      const response = await httpClient.get<{ status: string }>(`/payments/verify-session/${sessionId}`);
+      
+      // response is already the ApiResponse object from httpClient.get
+      // so response.data contains { status: "..." }
+      if (response.success && response.data?.status === "COMPLETED") {
+        setStatus("COMPLETED");
+        // Force refresh critical data
+        queryClient.invalidateQueries({ queryKey: ["movie-access"] });
+        queryClient.invalidateQueries({ queryKey: ["payment-history"] });
+        queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+        toast.success("Access granted! Your movie is unlocked.");
+      } else {
+        // Still processing or pending, retry in 2s
+        if (retryCount < 15) { // Max 30 seconds of polling
+          setTimeout(() => {
+            setRetryCount(prev => prev + 1);
+          }, 2000);
+        } else {
+          setStatus("ERROR");
+          toast.error("Process taking longer than expected. Please check your dashboard in a moment.");
+        }
+      }
+    } catch (error) {
+      console.error("Verification failed:", error);
+      setStatus("ERROR");
+    }
+  }, [sessionId, retryCount, queryClient]);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          setIsSyncing(false);
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
+    if (sessionId) {
+      verifyPayment();
+    }
+  }, [sessionId, verifyPayment]);
 
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 text-center animate-in fade-in slide-in-from-bottom-12 duration-1000 relative">
@@ -75,20 +102,32 @@ export default function PaymentSuccessPage() {
 
           <div className="mt-8 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              {isSyncing ? (
+              {status === "VERIFYING" ? (
                 <Loader2 className="w-5 h-5 text-zinc-500 animate-spin" />
-              ) : (
+              ) : status === "COMPLETED" ? (
                 <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-rose-500" />
               )}
               <p className="text-sm font-bold text-zinc-400">
-                {isSyncing ? `Access Sync Initiated (Redirect in ${countdown}s)...` : "Content Unlocked!"}
+                {status === "VERIFYING" 
+                  ? "Authenticating transaction with Stripe network..." 
+                  : status === "COMPLETED" 
+                    ? "Content Unlocked successfully!" 
+                    : "Verification timeout (Webhooks may be delayed)"}
               </p>
             </div>
-            <Link href="/dashboard/purchases">
-              <Button variant="outline" className="rounded-xl border-white/10 hover:bg-white/5 gap-2 px-6">
-                View Receipts <CreditCard className="w-4 h-4" />
-              </Button>
-            </Link>
+            {status === "COMPLETED" ? (
+               <div className="flex items-center gap-2 text-emerald-500 font-black text-[10px] uppercase tracking-widest bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Synchronized
+               </div>
+            ) : (
+              <Link href="/dashboard/purchases">
+                <Button variant="outline" className="rounded-xl border-white/10 hover:bg-white/5 gap-2 px-6">
+                  View Status <CreditCard className="w-4 h-4" />
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -99,9 +138,9 @@ export default function PaymentSuccessPage() {
               Return to Gallery <ArrowRight className="w-6 h-6" />
             </Button>
           </Link>
-          <Link href="/dashboard">
+          <Link href="/dashboard/purchases">
             <Button size="lg" variant="outline" className="h-16 px-10 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 text-lg font-bold">
-              My Account
+              Purchase History
             </Button>
           </Link>
         </div>

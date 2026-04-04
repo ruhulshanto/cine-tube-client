@@ -49,8 +49,7 @@ export const checkMovieAccess = async (movieId: string) => {
  * Fetch user's payment history (subscriptions or purchases).
  */
 export const getMyPaymentHistory = async (params?: Record<string, string>) => {
-  const response = await httpClient.get<any>("/payments/my", { params });
-  return response.data;
+  return httpClient.get<any>("/payments/my", { params });
 };
 
 /** Admin: all transactions with pagination + revenue summary in meta */

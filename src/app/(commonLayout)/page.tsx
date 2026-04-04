@@ -5,6 +5,7 @@ import { getMovies } from "@/services/movie.services";
 import { subscribeToPlan } from "@/services/payment.services";
 import { getEditorsPicks, getFeatured } from "@/services/homeCurated.services";
 import { useAuth } from "@/context/AuthContext";
+import { useUserAccess } from "@/hooks/useUserAccess";
 import { HomeBillboard } from "@/components/movies/HomeBillboard";
 import { MovieRow } from "@/components/movies/MovieRow";
 import { MovieCardSkeleton } from "@/components/movies/MovieCardSkeleton";
@@ -30,6 +31,8 @@ import { buildPinnedTrending, pickFavoriteFirst } from "@/lib/home/pinnedTrendin
 export default function Home() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { hasActiveSubscription, activePlan, subscriptionEndDate } = useUserAccess();
+  
   const ALL_GENRES_VALUE = "__ALL__";
 
   const [homeSearch, setHomeSearch] = useState("");

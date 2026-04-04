@@ -23,6 +23,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAdminPendingReviewCount } from "@/hooks/useAdminPendingReviewCount";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUserAccess } from "@/hooks/useUserAccess";
+import { PassCountdownTimer } from "@/components/shared/PassCountdownTimer";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -36,6 +38,8 @@ export function Navbar() {
     (user?.email ? user.email.split("@")[0] : "User");
   const isAdmin = user?.role === "ADMIN";
   const { data: pendingReviewCount = 0, isPending: pendingCountLoading } = useAdminPendingReviewCount(!!user && isAdmin);
+  const { hasActiveSubscription, activePlan, subscriptionEndDate } = useUserAccess();
+  
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -143,6 +147,16 @@ export function Navbar() {
 
           {/* Desktop actions — unchanged cluster; dropdown hover fixed below */}
           <div className="hidden min-w-0 shrink-0 items-center justify-self-end gap-2 md:col-start-3 md:flex md:gap-3">
+            {hasActiveSubscription && (
+               <div className="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 pl-3 pr-4 py-1.5 shadow-[0_0_15px_rgba(16,185,129,0.15)] mr-2">
+                  <span className="relative flex h-2 w-2 shrink-0">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                  </span>
+                  <PassCountdownTimer planName={activePlan === "YEARLY" ? "YEARLY" : "MONTHLY"} endDate={subscriptionEndDate} />
+               </div>
+            )}
+            
             {user ? (
               <div className="relative flex items-center gap-1.5 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5 sm:gap-2">
                 <Link href="/watchlist" title="Watchlist">
@@ -378,6 +392,17 @@ export function Navbar() {
                     </div>
                   </div>
                 )}
+                
+                {hasActiveSubscription && (
+                  <div className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                    <span className="relative flex h-2 w-2 shrink-0">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                    </span>
+                    <PassCountdownTimer planName={activePlan === "YEARLY" ? "YEARLY" : "MONTHLY"} endDate={subscriptionEndDate} />
+                  </div>
+                )}
+                
                 <div className="flex flex-col gap-2 border-t border-white/5 pt-4">
                   <Link href="/movies" onClick={() => setMobileOpen(false)}>
                     <Button variant="ghost" className="h-14 w-full justify-start gap-4 rounded-2xl text-base font-black uppercase tracking-wide">
