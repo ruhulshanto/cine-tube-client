@@ -228,7 +228,7 @@ export function Navbar() {
                   initial={false}
                   animate={{
                     width: profileOpen ? 280 : "100%",
-                    borderRadius: profileOpen ? 28 : 9999,
+                    borderRadius: profileOpen ? 28 : 99,
                     backgroundColor: profileOpen
                       ? "rgba(255, 255, 255, 0.12)"
                       : "rgba(255, 255, 255, 0.05)",
@@ -236,12 +236,13 @@ export function Navbar() {
                       ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
                       : "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
                   }}
+                  
                   transition={{
                     type: "tween",
                     ease: [0.23, 1, 0.32, 1],
                     duration: 0.3,
                   }}
-                  className="absolute top-0 right-0 border border-white/15 bg-white/5 backdrop-blur-3xl overflow-hidden will-change-[width,height,border-radius]"
+                  className="absolute top-0 right-0 rounded-[10px] border border-white/15 bg-white/5 backdrop-blur-3xl overflow-hidden will-change-[width,height,border-radius]"
                 >
                   {/* Profile Trigger (Top of the card) */}
                   <div
@@ -260,7 +261,7 @@ export function Navbar() {
                         <span className="flex h-full w-full items-center justify-center bg-linear-to-br from-[#e50914] to-[#b80711] text-xs font-bold uppercase text-white shadow-inner">
                           {initials}
                         </span>
-                      )}
+                      )}  
                     </div>
                     <div className="hidden md:flex flex-col leading-tight min-w-0">
                       <span className="text-sm font-semibold text-white truncate">
