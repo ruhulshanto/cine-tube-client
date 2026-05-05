@@ -1,7 +1,8 @@
 "use client";
 
-import { Footer } from "@/components/shared/Footer"
+import { Footer } from "@/components/shared/Footer";
 import { Navbar } from "@/components/shared/Navbar";
+import { usePathname } from "next/navigation";
 
 export default function CommonLayout({
   children,
@@ -10,10 +11,17 @@ export default function CommonLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const hasNavbarOffset = pathname !== "/";
+
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar/>
-     <main className="flex-1 text-foreground bg-background">{children}</main>
+      <Navbar />
+      <main
+        className={`flex-1 text-foreground bg-background ${hasNavbarOffset ? "pt-16" : ""}`}
+      >
+        {children}
+      </main>
 
       {/* Modal renders on top */}
       {modal}
@@ -22,4 +30,3 @@ export default function CommonLayout({
     </div>
   );
 }
-  
