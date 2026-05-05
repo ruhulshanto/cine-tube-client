@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Navbar } from "@/components/shared/Navbar";
 import { Button } from "@/components/ui/button";
 import { Check, Crown, Play, Sparkles } from "lucide-react";
 
@@ -36,7 +35,6 @@ const plans = [
 export default function PricingPage() {
   return (
     <main className="min-h-screen bg-[#0b0b0b] text-white">
-      <Navbar />
       <section className="container mx-auto px-6 pb-10 pt-32 text-center md:px-12 lg:px-20">
         <p className="mb-3 text-[10px] font-black uppercase tracking-[0.28em] text-primary">
           Pricing

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Navbar } from "@/components/shared/Navbar";
 import { Button } from "@/components/ui/button";
 import { GENRE_OPTIONS } from "@/lib/adminMovie.schemas";
 import { Clapperboard } from "lucide-react";
@@ -7,7 +6,6 @@ import { Clapperboard } from "lucide-react";
 export default function BrowseGenrePage() {
   return (
     <main className="min-h-screen bg-[#0b0b0b] text-white">
-      <Navbar />
       <section className="container mx-auto px-6 pb-10 pt-32 md:px-12 lg:px-20">
         <p className="mb-3 text-[10px] font-black uppercase tracking-[0.28em] text-primary">Browse by genre</p>
         <h1 className="max-w-4xl text-4xl font-black uppercase tracking-tighter md:text-6xl">

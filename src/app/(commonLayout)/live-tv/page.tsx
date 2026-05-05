@@ -7,7 +7,6 @@ import { PremiumModal } from "@/components/player/PremiumModal";
 import { Channel } from "@/lib/channels";
 import { cn } from "@/lib/utils";
 import { Play, Lock } from "lucide-react";
-import { Navbar } from "@/components/shared/Navbar";
 import {
   PlayerSkeleton,
   ChannelSkeleton,
@@ -156,7 +155,6 @@ export default function LiveTVPage() {
 
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">
-      <Navbar />
       <div className="container mx-auto px-4 py-8">
         {/* Header - Clean, minimal design */}
         <motion.div

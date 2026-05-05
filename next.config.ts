@@ -16,10 +16,15 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "plus.unsplash.com",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
     ],
   },
   async rewrites() {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
     return [
       // Auth endpoints
       {

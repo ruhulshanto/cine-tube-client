@@ -1,6 +1,7 @@
 "use client";
 
-import { Footer } from "@/components/shared/Footer";
+import { Footer } from "@/components/shared/Footer"
+import { Navbar } from "@/components/shared/Navbar";
 
 export default function CommonLayout({
   children,
@@ -11,7 +12,8 @@ export default function CommonLayout({
 }) {
   return (
     <div className="flex flex-col min-h-screen">
-      <main className="flex-1 text-foreground bg-background">{children}</main>
+      <Navbar/>
+     <main className="flex-1 text-foreground bg-background">{children}</main>
 
       {/* Modal renders on top */}
       {modal}
@@ -20,3 +22,4 @@ export default function CommonLayout({
     </div>
   );
 }
+  

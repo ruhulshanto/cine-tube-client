@@ -1,11 +1,9 @@
 import Link from "next/link";
-import { Navbar } from "@/components/shared/Navbar";
 import { Button } from "@/components/ui/button";
 
 export default function AboutPage() {
   return (
     <main className="min-h-screen bg-[#0b0b0b] text-white">
-      <Navbar />
       <section
         className="relative isolate flex min-h-[62vh] items-end bg-cover bg-center px-6 pb-16 pt-28 md:px-12 lg:px-20"
         style={{

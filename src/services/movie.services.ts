@@ -25,3 +25,7 @@ export const createMovieAdmin = async (formData: FormData) => {
 export const updateMovieAdmin = async (id: string, formData: FormData) => {
   return httpClient.patchMultipart<Movie>(`movies/${id}`, formData);
 };
+
+export const searchMovies = async (params?: Record<string, string>) => {
+  return httpClient.get<Movie[]>("search/movies", { params });
+};

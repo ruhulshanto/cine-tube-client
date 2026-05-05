@@ -3,11 +3,17 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getMovies } from "@/services/movie.services";
 import { MovieCard } from "@/components/movies/MovieCard";
+import { SearchWithSuggestions } from "@/components/movies/SearchWithSuggestions";
 import { MovieCardSkeleton } from "@/components/movies/MovieCardSkeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
 import { Search, Popcorn, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -17,131 +23,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { GENRE_OPTIONS } from "@/lib/adminMovie.schemas";
 import { publicSelectClass } from "@/lib/publicFormStyles";
 import { PageSkeleton } from "@/components/shared/AppSkeletons";
-
 const PAGE_SIZE = 10;
 
-function getVisiblePages(current: number, total: number): (number | "gap")[] {
-  if (total <= 0) return [];
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const pages = new Set<number>();
-  pages.add(1);
-  pages.add(total);
-  for (let i = current - 1; i <= current + 1; i++) {
-    if (i >= 1 && i <= total) pages.add(i);
-  }
-  const sorted = [...pages].sort((a, b) => a - b);
-  const result: (number | "gap")[] = [];
-  for (let i = 0; i < sorted.length; i++) {
-    const n = sorted[i]!;
-    if (i > 0 && n - sorted[i - 1]! > 1) result.push("gap");
-    result.push(n);
-  }
-  return result;
-}
-
-function MoviesPagination({
-  page,
-  totalPages,
-  total,
-  onPageChange,
-  isFetching,
-}: {
-  page: number;
-  totalPages: number;
-  total: number;
-  onPageChange: (p: number) => void;
-  isFetching: boolean;
-}) {
-  const visible = useMemo(() => getVisiblePages(page, totalPages), [page, totalPages]);
-
-  if (totalPages <= 1) {
-    return (
-      <div className="flex flex-col items-center gap-3 pt-10 sm:flex-row sm:justify-between">
-        <p className="text-center text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
-          {total === 0 ? "No titles" : `All ${total} ${total === 1 ? "title" : "titles"}`}
-        </p>
-      </div>
-    );
-  }
-
-  const start = (page - 1) * PAGE_SIZE + 1;
-  const end = Math.min(page * PAGE_SIZE, total);
-
-  return (
-    <div className="mt-12 flex flex-col items-stretch gap-6 border-t border-white/5 pt-10 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-center text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500 sm:text-left">
-        <span className="text-zinc-300">Showing </span>
-        {start}–{end}
-        <span className="text-zinc-300"> of </span>
-        {total}
-      </p>
-
-      <div
-        className={cn(
-          "flex flex-wrap items-center justify-center gap-2 transition-opacity duration-200",
-          isFetching && "opacity-70"
-        )}
-      >
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-11 gap-1.5 rounded-2xl border-white/10 bg-white/[0.04] px-4 text-[10px] font-black uppercase tracking-widest text-zinc-300 hover:border-primary/30 hover:bg-primary/10 hover:text-white"
-          disabled={page <= 1 || isFetching}
-          onClick={() => onPageChange(page - 1)}
-          aria-label="Previous page"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Prev
-        </Button>
-
-        <div className="flex flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-black/30 p-1.5 backdrop-blur-sm">
-          {visible.map((item, idx) =>
-            item === "gap" ? (
-              <span
-                key={`gap-${idx}`}
-                className="flex h-10 min-w-[2.25rem] items-center justify-center px-1 text-zinc-600"
-                aria-hidden
-              >
-                …
-              </span>
-            ) : (
-              <button
-                key={item}
-                type="button"
-                onClick={() => onPageChange(item)}
-                disabled={isFetching}
-                className={cn(
-                  "flex h-10 min-w-[2.5rem] items-center justify-center rounded-xl text-sm font-bold transition-all duration-200",
-                  item === page
-                    ? "bg-primary text-white shadow-[0_0_20px_rgba(229,9,20,0.35)] ring-1 ring-primary/60"
-                    : "text-zinc-400 hover:bg-white/10 hover:text-white"
-                )}
-                aria-label={`Page ${item}`}
-                aria-current={item === page ? "page" : undefined}
-              >
-                {item}
-              </button>
-            )
-          )}
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-11 gap-1.5 rounded-2xl border-white/10 bg-white/[0.04] px-4 text-[10px] font-black uppercase tracking-widest text-zinc-300 hover:border-primary/30 hover:bg-primary/10 hover:text-white"
-          disabled={page >= totalPages || isFetching}
-          onClick={() => onPageChange(page + 1)}
-          aria-label="Next page"
-        >
-          Next
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  );
-}
+import { MoviesPagination } from "@/components/movies/MoviesPagination";
 
 function MoviesPageSkeleton() {
   return <PageSkeleton variant="browse" />;
@@ -158,105 +42,122 @@ function MoviesPageContent() {
   const sortByParam = searchParams.get("sortBy") ?? "createdAt";
   const sortOrderParam = searchParams.get("sortOrder") ?? "desc";
 
+  const pageParam = searchParams.get("page") ?? "1";
+  const currentPage = Math.max(1, Number(pageParam) || 1);
+
   const [searchTerm, setSearchTerm] = useState(qParam);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [releaseYear, setReleaseYear] = useState(releaseYearParam);
+  const [streamingPlatform, setStreamingPlatform] = useState(
+    streamingPlatformParam,
+  );
+
   const debouncedSearch = useDebounce(searchTerm, 500);
-
-  // Browse filters (wired to backend query keys)
-  const [genre, setGenre] = useState<string>(genreParam);
-  const [minRating, setMinRating] = useState<string>(minRatingParam); // expects backend: minRating
-  const [releaseYear, setReleaseYear] = useState<string>(releaseYearParam); // expects backend: releaseYear
-  const [streamingPlatform, setStreamingPlatform] = useState<string>(streamingPlatformParam); // expects backend: streamingPlatform
-  const [sortBy, setSortBy] = useState<string>(sortByParam);
-  const [sortOrder, setSortOrder] = useState<string>(sortOrderParam);
-
   const debouncedReleaseYear = useDebounce(releaseYear, 350);
   const debouncedStreamingPlatform = useDebounce(streamingPlatform, 350);
 
   useEffect(() => {
-    setSearchTerm(qParam);
-  }, [qParam]);
-
-  useEffect(() => {
-    setCurrentPage(1);
+    if (debouncedSearch !== qParam) {
+      updateUrlFromBrowseState({ q: debouncedSearch, page: "1" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
-  // Keep URL in sync while typing numeric/text filters (debounced).
   useEffect(() => {
     if (debouncedReleaseYear !== releaseYearParam) {
-      setCurrentPage(1);
-      updateUrlFromBrowseState({ releaseYear: debouncedReleaseYear });
+      updateUrlFromBrowseState({
+        releaseYear: debouncedReleaseYear,
+        page: "1",
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedReleaseYear]);
 
   useEffect(() => {
     if (debouncedStreamingPlatform !== streamingPlatformParam) {
-      setCurrentPage(1);
-      updateUrlFromBrowseState({ streamingPlatform: debouncedStreamingPlatform });
+      updateUrlFromBrowseState({
+        streamingPlatform: debouncedStreamingPlatform,
+        page: "1",
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedStreamingPlatform]);
-
-  useEffect(() => {
-    if (genreParam !== genre) setGenre(genreParam);
-    if (minRatingParam !== minRating) setMinRating(minRatingParam);
-    if (sortByParam !== sortBy) setSortBy(sortByParam);
-    if (sortOrderParam !== sortOrder) setSortOrder(sortOrderParam);
-  }, [genreParam, minRatingParam, releaseYearParam, sortOrderParam, sortByParam, streamingPlatformParam]);
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [currentPage]);
 
   const commitSearchToUrl = () => {
     const trimmed = searchTerm.trim();
     const params = new URLSearchParams(searchParams.toString());
     if (trimmed) params.set("q", trimmed);
     else params.delete("q");
+    params.set("page", "1");
     const qs = params.toString();
-    setCurrentPage(1);
-    router.replace(`/movies${qs ? `?${qs}` : ""}`, { scroll: false });
+    // Only update if we are exactly on the movies catalog page
+    if (window.location.pathname === "/movies") {
+      router.replace(`/movies${qs ? `?${qs}` : ""}`, { scroll: false });
+    }
   };
 
-  const updateUrlFromBrowseState = (next: {
-    genre?: string;
-    minRating?: string;
-    releaseYear?: string;
-    streamingPlatform?: string;
-    sortBy?: string;
-    sortOrder?: string;
-  } = {}) => {
+  const updateUrlFromBrowseState = (
+    next: {
+      q?: string;
+      genre?: string;
+      minRating?: string;
+      releaseYear?: string;
+      streamingPlatform?: string;
+      sortBy?: string;
+      sortOrder?: string;
+      page?: string;
+    } = {},
+  ) => {
     const params = new URLSearchParams(searchParams.toString());
 
-    const nextGenre = next.genre ?? genre;
-    if (nextGenre) params.set("genre", nextGenre);
-    else params.delete("genre");
+    if (next.genre !== undefined) {
+      if (next.genre) params.set("genre", next.genre);
+      else params.delete("genre");
+    }
 
-    const nextMinRating = next.minRating ?? minRating;
-    if (nextMinRating) params.set("minRating", nextMinRating);
-    else params.delete("minRating");
+    if (next.minRating !== undefined) {
+      if (next.minRating) params.set("minRating", next.minRating);
+      else params.delete("minRating");
+    }
 
-    const nextReleaseYear = next.releaseYear ?? releaseYear;
-    if (nextReleaseYear) params.set("releaseYear", nextReleaseYear);
-    else params.delete("releaseYear");
+    if (next.releaseYear !== undefined) {
+      if (next.releaseYear) params.set("releaseYear", next.releaseYear);
+      else params.delete("releaseYear");
+    }
 
-    const nextStreamingPlatform = next.streamingPlatform ?? streamingPlatform;
-    if (nextStreamingPlatform) params.set("streamingPlatform", nextStreamingPlatform);
-    else params.delete("streamingPlatform");
+    if (next.streamingPlatform !== undefined) {
+      if (next.streamingPlatform)
+        params.set("streamingPlatform", next.streamingPlatform);
+      else params.delete("streamingPlatform");
+    }
 
-    const nextSortBy = next.sortBy ?? sortBy;
-    params.set("sortBy", nextSortBy);
+    if (next.sortBy !== undefined) {
+      params.set("sortBy", next.sortBy);
+    }
 
-    const nextSortOrder = next.sortOrder ?? sortOrder;
-    params.set("sortOrder", nextSortOrder);
+    if (next.sortOrder !== undefined) {
+      params.set("sortOrder", next.sortOrder);
+    }
+
+    if (next.q !== undefined) {
+      if (next.q) params.set("q", next.q);
+      else params.delete("q");
+    }
+
+    const nextPage = next.page ?? pageParam;
+    params.set("page", nextPage);
 
     const qs = params.toString();
-    router.replace(`/movies?${qs}`, { scroll: false });
+    // Only update if we are exactly on the movies catalog page
+    if (window.location.pathname === "/movies") {
+      router.replace(`/movies?${qs}`, { scroll: false });
+    }
   };
 
   const handlePageChange = (p: number) => {
-    setCurrentPage(Math.max(1, Math.min(p, totalPages || 1)));
+    const params = new URLSearchParams(searchParams.toString());
+    const targetPage = Math.max(1, Math.min(p, totalPages || 1));
+    params.set("page", targetPage.toString());
+    router.replace(`/movies?${params.toString()}`, { scroll: false });
   };
 
   const {
@@ -268,35 +169,49 @@ function MoviesPageContent() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["movies", debouncedSearch, genre, minRating, releaseYear, streamingPlatform, sortBy, sortOrder],
+    queryKey: [
+      "movies",
+      currentPage,
+      qParam,
+      genreParam,
+      minRatingParam,
+      releaseYearParam,
+      streamingPlatformParam,
+      sortByParam,
+      sortOrderParam,
+    ],
     queryFn: () =>
       getMovies({
-        page: "1",
-        limit: "100",
-        sortBy,
-        sortOrder,
-        ...(debouncedSearch.trim() ? { searchTerm: debouncedSearch.trim() } : {}),
-        ...(genre ? { genre } : {}),
-        ...(minRating ? { minRating } : {}),
-        ...(releaseYear ? { releaseYear } : {}),
-        ...(streamingPlatform ? { streamingPlatform } : {}),
+        page: currentPage.toString(),
+        limit: PAGE_SIZE.toString(),
+        sortBy: sortByParam,
+        sortOrder: sortOrderParam,
+        ...(qParam.trim() ? { searchTerm: qParam.trim() } : {}),
+        ...(genreParam ? { genre: genreParam } : {}),
+        ...(minRatingParam ? { minRating: minRatingParam } : {}),
+        ...(releaseYearParam ? { releaseYear: releaseYearParam } : {}),
+        ...(streamingPlatformParam
+          ? { streamingPlatform: streamingPlatformParam }
+          : {}),
       }),
     placeholderData: keepPreviousData,
   });
 
   const movies = response?.data || [];
-  const total = movies.length;
-  const totalPages = Math.ceil(total / PAGE_SIZE);
-  const start = (currentPage - 1) * PAGE_SIZE;
-  const paginatedMovies = movies.slice(start, start + PAGE_SIZE);
+  const total = response?.meta?.total || 0;
+  const totalPages = response?.meta?.totalPages || 0;
 
   const showSkeleton = isLoading && !isPlaceholderData;
-  const errorMessage = error instanceof Error ? error.message : "Please check your connection or try again.";
+  const errorMessage =
+    error instanceof Error
+      ? error.message
+      : "Please check your connection or try again.";
 
   useEffect(() => {
     if (totalPages > 0 && currentPage > totalPages) {
-      setCurrentPage(totalPages);
+      handlePageChange(totalPages);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, totalPages]);
 
   return (
@@ -304,10 +219,12 @@ function MoviesPageContent() {
       <div className="mb-12 flex flex-col items-end justify-between gap-8 border-b border-white/5 pb-8 md:flex-row">
         <div className="space-y-4">
           <h1 className="text-4xl font-black uppercase tracking-tighter text-white text-shadow-glow md:text-6xl">
-            Explore All <span className="text-primary tracking-normal">Films</span>
+            Explore All{" "}
+            <span className="text-primary tracking-normal">Films</span>
           </h1>
           <p className="max-w-xl text-lg leading-relaxed text-zinc-400">
-            Discover your next favorite story. Browse the catalog page by page or search by title, genre, or director.
+            Discover your next favorite story. Browse the catalog page by page
+            or search by title, genre, or director.
           </p>
           {!showSkeleton && total > 0 && (
             <p className="text-sm font-semibold uppercase tracking-widest text-zinc-500">
@@ -316,32 +233,17 @@ function MoviesPageContent() {
           )}
         </div>
 
-        <div id="movies-page-search" className="group relative w-full transition-all duration-300 md:w-[400px]">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 rounded-lg border border-primary/20 bg-primary/10 p-1.5 transition-colors group-focus-within:border-primary group-focus-within:bg-primary">
-            <Search className="h-4 w-4 text-primary transition-colors group-focus-within:text-white" />
-          </div>
-          <Input
-            placeholder="Search by title, genre, director…"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                commitSearchToUrl();
-              }
+        <div id="movies-page-search" className="w-full md:w-[450px]">
+          <SearchWithSuggestions
+            initialValue={searchTerm}
+            onChange={(q) => setSearchTerm(q)}
+            onSearch={(q) => {
+              setSearchTerm(q);
+              commitSearchToUrl();
             }}
-            autoComplete="off"
-            className="h-14 rounded-2xl border-white/5 bg-white/5 pl-14 pr-24 text-lg font-medium transition-all focus-visible:bg-white/10 focus-visible:ring-primary/20"
+            placeholder="Search titles, directors, genres..."
+            showDropdown={false}
           />
-          <Button
-            type="button"
-            size="sm"
-            variant="netflix"
-            className="absolute right-2 top-1/2 h-10 -translate-y-1/2 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest"
-            onClick={commitSearchToUrl}
-          >
-            Search
-          </Button>
         </div>
       </div>
 
@@ -367,14 +269,14 @@ function MoviesPageContent() {
       {/* Filters + sorting */}
       <div className="mb-8 grid gap-3 md:grid-cols-2 lg:grid-cols-5">
         <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Genre</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            Genre
+          </p>
           <select
-            value={genre}
+            value={genreParam}
             onChange={(e) => {
               const v = e.target.value;
-              setGenre(v);
-              setCurrentPage(1);
-              updateUrlFromBrowseState({ genre: v });
+              updateUrlFromBrowseState({ genre: v, page: "1" });
             }}
             className={publicSelectClass}
           >
@@ -390,14 +292,14 @@ function MoviesPageContent() {
         </div>
 
         <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Min rating</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            Min rating
+          </p>
           <select
-            value={minRating}
+            value={minRatingParam}
             onChange={(e) => {
               const v = e.target.value;
-              setMinRating(v);
-              setCurrentPage(1);
-              updateUrlFromBrowseState({ minRating: v });
+              updateUrlFromBrowseState({ minRating: v, page: "1" });
             }}
             className={publicSelectClass}
           >
@@ -420,15 +322,16 @@ function MoviesPageContent() {
         </div>
 
         <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Release year</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            Release year
+          </p>
           <Input
             type="number"
             inputMode="numeric"
             value={releaseYear}
             onChange={(e) => setReleaseYear(e.target.value)}
             onBlur={() => {
-              setCurrentPage(1);
-              updateUrlFromBrowseState();
+              updateUrlFromBrowseState({ page: "1" });
             }}
             placeholder="e.g. 2021"
             className="h-11 rounded-2xl border-white/5 bg-white/5 px-4 text-sm text-white focus-visible:bg-white/10 focus-visible:ring-primary/20"
@@ -436,13 +339,14 @@ function MoviesPageContent() {
         </div>
 
         <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Streaming platform</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            Streaming platform
+          </p>
           <Input
             value={streamingPlatform}
             onChange={(e) => setStreamingPlatform(e.target.value)}
             onBlur={() => {
-              setCurrentPage(1);
-              updateUrlFromBrowseState();
+              updateUrlFromBrowseState({ page: "1" });
             }}
             placeholder="e.g. netflix, prime, cloud…"
             className="h-11 rounded-2xl border-white/5 bg-white/5 px-4 text-sm text-white focus-visible:bg-white/10 focus-visible:ring-primary/20"
@@ -450,14 +354,17 @@ function MoviesPageContent() {
         </div>
 
         <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Sort</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            Sort
+          </p>
           <select
-            value={sortBy}
+            value={sortByParam}
             onChange={(e) => {
-              setSortBy(e.target.value);
-              setSortOrder("desc");
-              setCurrentPage(1);
-              updateUrlFromBrowseState({ sortBy: e.target.value, sortOrder: "desc" });
+              updateUrlFromBrowseState({
+                sortBy: e.target.value,
+                sortOrder: "desc",
+                page: "1",
+              });
             }}
             className={publicSelectClass}
           >
@@ -485,20 +392,18 @@ function MoviesPageContent() {
             variant="outline"
             className="rounded-2xl border-white/10 bg-white/5 text-[10px] font-black uppercase tracking-widest text-zinc-300 hover:bg-white/10"
             onClick={() => {
-              setGenre("");
-              setMinRating("");
+              setSearchTerm("");
               setReleaseYear("");
               setStreamingPlatform("");
-              setSortBy("createdAt");
-              setSortOrder("desc");
-              setCurrentPage(1);
               updateUrlFromBrowseState({
+                q: "",
                 genre: "",
                 minRating: "",
                 releaseYear: "",
                 streamingPlatform: "",
                 sortBy: "createdAt",
                 sortOrder: "desc",
+                page: "1",
               });
             }}
           >
@@ -526,10 +431,12 @@ function MoviesPageContent() {
           <div
             className={cn(
               "grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-10 xl:grid-cols-5 transition-all duration-300",
-              isFetching && isPlaceholderData && "pointer-events-none opacity-40 blur-sm scale-[0.99]"
+              isFetching &&
+                isPlaceholderData &&
+                "pointer-events-none opacity-40 blur-sm scale-[0.99]",
             )}
           >
-            {paginatedMovies.map((movie, index) => (
+            {movies.map((movie, index) => (
               <MovieCard key={movie.id || `movie-${index}`} movie={movie} />
             ))}
           </div>

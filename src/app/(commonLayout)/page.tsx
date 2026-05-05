@@ -7,7 +7,6 @@ import { getEditorsPicks, getFeatured } from "@/services/homeCurated.services";
 import { useAuth } from "@/context/AuthContext";
 import { useUserAccess } from "@/hooks/useUserAccess";
 import { HeroSection } from "@/components/shared/HeroSection";
-import { Navbar } from "@/components/shared/Navbar";
 import { MovieRow } from "@/components/movies/MovieRow";
 import { PageSkeleton } from "@/components/shared/AppSkeletons";
 import { GENRE_OPTIONS } from "@/lib/adminMovie.schemas";
@@ -205,7 +204,6 @@ export default function Home() {
     <div className="bg-[#0b0b0b] min-h-screen">
       {/* 🚀 THE HERO: Cinematic landing */}
       <HeroSection movie={billboardMovie}>
-        <Navbar />
       </HeroSection>
 
       {/* 🎞️ MOVIE BROWSING: The Cinematic Journey */}

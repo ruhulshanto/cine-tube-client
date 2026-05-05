@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,9 +13,11 @@ import {
   User,
   Settings,
   Search,
+  Bookmark,
 } from "lucide-react";
 import { HiOutlineMenu } from "react-icons/hi";
 import { NavDrawer } from "@/components/shared/NavDrawer";
+import { SearchModal } from "@/components/shared/SearchModal";
 import { useAuth } from "@/context/AuthContext";
 
 const fullNavItems = [
@@ -48,7 +51,6 @@ const navItems = [
   { label: "Home", href: "/" },
   { label: "Live TV", href: "/live-tv" },
   { label: "Movies", href: "/movies" },
-  { label: "Search", href: "/search" },
 ];
 
 const quickLinks = [
@@ -59,12 +61,44 @@ const quickLinks = [
   { label: "Help Center", href: "/help" },
 ];
 
+const getDisplayName = (user: {
+  firstName?: string | null;
+  lastName?: string | null;
+  name?: string | null;
+  username?: string | null;
+  email: string;
+}) => {
+  const fullName = [user.firstName, user.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+  if (fullName) return fullName;
+  if (user.name) return user.name;
+  if (user.username) return user.username;
+  return user.email.split("@")[0];
+};
+
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const profileImageUrl = user?.profileImage || user?.avatar || "";
+  const displayName = user ? getDisplayName(user) : "User";
+  const initials =
+    displayName
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0].toUpperCase())
+      .slice(0, 2)
+      .join("") || "U";
+
+  const closeProfileMenu = () => setProfileOpen(false);
+  const toggleProfileMenu = () => setProfileOpen((value) => !value);
+  const openProfileMenu = () => setProfileOpen(true);
+  const handleProfileMouseLeave = () => setProfileOpen(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -98,6 +132,21 @@ export function Navbar() {
     }
   }, [profileOpen]);
 
+  // Handle Search Modal Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchModalOpen(true);
+      }
+      if (e.key === "Escape") {
+        setSearchModalOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   return (
     <>
       <nav
@@ -118,7 +167,7 @@ export function Navbar() {
                 setMobileOpen(false);
                 setDrawerOpen(true);
               }}
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.3 }}
               whileTap={{ scale: 0.95 }}
               className="group inline-flex h-12 w-12 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all duration-200 hover:bg-white/20 hover:border-white/30"
               aria-label="Open menu"
@@ -139,102 +188,166 @@ export function Navbar() {
               <Link
                 key={item.label}
                 href={item.href}
-                scroll={item.label === "Search" ? false : true}
                 className="inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-white/80 transition hover:bg-white/10 hover:text-white"
                 aria-label={item.label}
               >
-                {item.label === "Search" ? (
-                  <Search className="h-4 w-4" />
-                ) : (
-                  item.label
-                )}
+                {item.label}
               </Link>
             ))}
+            <button
+              onClick={() => setSearchModalOpen(true)}
+              className="inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-white/80 transition hover:bg-white/10 hover:text-white"
+              aria-label="Search"
+            >
+              <Search className="h-4 w-4" />
+            </button>
           </div>
 
           <div className="flex items-center gap-2">
             {isLoading ? (
               <div className="h-10 w-10 rounded-full bg-white/10 animate-pulse" />
             ) : isAuthenticated && user ? (
-              <div className="relative group">
-                <motion.button
-                  data-profile-button
-                  onClick={() => setProfileOpen(!profileOpen)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 rounded-full px-3 py-2 transition hover:bg-white/10"
-                >
-                  <div className="h-8 w-8 rounded-full bg-linear-to-br from-[#e50914] to-[#b80711] flex items-center justify-center text-xs font-bold text-white">
-                    {user.username?.charAt(0).toUpperCase() ||
-                      user.firstName?.charAt(0).toUpperCase() ||
-                      user.email?.charAt(0).toUpperCase() ||
-                      "U"}
+              <div
+                className="relative z-50"
+                onMouseEnter={openProfileMenu}
+                onMouseLeave={handleProfileMouseLeave}
+              >
+                {/* Dummy placeholder to maintain layout width and prevent shifting */}
+                <div className="invisible flex items-center gap-3 px-3 py-2 border border-transparent select-none pointer-events-none">
+                  <div className="h-9 w-9" />
+                  <div className="hidden md:flex flex-col">
+                    <span className="text-sm font-semibold">{displayName}</span>
+                    <span className="text-[11px] uppercase tracking-[0.24em]">
+                      {user.role}
+                    </span>
                   </div>
-                  <span className="hidden text-sm font-semibold text-white md:inline">
-                    {user.firstName && user.lastName
-                      ? `${user.firstName} ${user.lastName}`
-                      : user.username || user.email.split("@")[0]}
-                  </span>
-                  <ChevronDown className="h-4 w-4 text-white/70 transition group-hover:rotate-180" />
-                </motion.button>
+                  <ChevronDown className="h-4 w-4" />
+                </div>
 
-                <AnimatePresence>
-                  {profileOpen && (
-                    <motion.div
-                      data-profile-menu
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute right-0 top-full mt-2 w-48 rounded-lg border border-white/10 bg-black/90 shadow-xl backdrop-blur-xl z-50"
-                    >
-                      <div className="border-b border-white/10 p-4">
-                        <p className="text-sm font-semibold text-white">
-                          {user.firstName && user.lastName
-                            ? `${user.firstName} ${user.lastName}`
-                            : user.username || "User"}
-                        </p>
-                        <p className="text-xs text-white/60">{user.email}</p>
-                        <p className="text-xs text-[#e50914] font-semibold mt-2 uppercase tracking-wider">
-                          {user.role}
-                        </p>
-                      </div>
-
-                      {user.role === "ADMIN" && (
-                        <>
-                          <Link
-                            href="/dashboard/admin/movies"
-                            onClick={() => setProfileOpen(false)}
-                            className="flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/10 transition border-b border-white/10"
-                          >
-                            <Settings className="h-4 w-4" />
-                            Admin Panel
-                          </Link>
-                        </>
+                <motion.div
+                  initial={false}
+                  animate={{
+                    width: profileOpen ? 280 : "100%",
+                    borderRadius: profileOpen ? 28 : 9999,
+                    backgroundColor: profileOpen
+                      ? "rgba(255, 255, 255, 0.12)"
+                      : "rgba(255, 255, 255, 0.05)",
+                    boxShadow: profileOpen
+                      ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+                      : "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+                  }}
+                  transition={{
+                    type: "tween",
+                    ease: [0.23, 1, 0.32, 1],
+                    duration: 0.3,
+                  }}
+                  className="absolute top-0 right-0 border border-white/15 bg-white/5 backdrop-blur-3xl overflow-hidden will-change-[width,height,border-radius]"
+                >
+                  {/* Profile Trigger (Top of the card) */}
+                  <div
+                    className="group flex cursor-pointer items-center gap-3 px-3 py-2 transition-colors duration-200 hover:bg-white/5"
+                    onClick={toggleProfileMenu}
+                  >
+                    <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/20 bg-slate-900/80 transition-transform duration-300 group-hover:scale-105">
+                      {profileImageUrl ? (
+                        <Image
+                          src={profileImageUrl}
+                          alt={displayName}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-full w-full items-center justify-center bg-linear-to-br from-[#e50914] to-[#b80711] text-xs font-bold uppercase text-white shadow-inner">
+                          {initials}
+                        </span>
                       )}
+                    </div>
+                    <div className="hidden md:flex flex-col leading-tight min-w-0">
+                      <span className="text-sm font-semibold text-white truncate">
+                        {displayName}
+                      </span>
+                      <span className="text-[11px] uppercase tracking-[0.24em] text-white/60 truncate">
+                        {user.role}
+                      </span>
+                    </div>
+                    <ChevronDown
+                      className={`h-4 w-4 text-white/70 transition-transform duration-300 ${profileOpen ? "rotate-180" : "group-hover:text-white"}`}
+                    />
+                  </div>
 
-                      <Link
-                        href="/dashboard/profile"
-                        onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/10 transition border-b border-white/10"
+                  {/* Expanded Menu Content */}
+                  <AnimatePresence>
+                    {profileOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.2 }}
+                        className="border-t border-white/10"
                       >
-                        <User className="h-4 w-4" />
-                        My Profile
-                      </Link>
+                        <div className="px-4 py-2 bg-white/5">
+                          <p className="truncate text-[11px] text-white/40">
+                            {user.email}
+                          </p>
+                        </div>
 
-                      <button
-                        onClick={() => {
-                          logout();
-                          setProfileOpen(false);
-                        }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-400/10 transition"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Sign Out
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                        <div className="p-2">
+                          <div className="grid gap-0.5">
+                            {user.role === "ADMIN" && (
+                              <Link
+                                href="/dashboard/admin/movies"
+                                onClick={closeProfileMenu}
+                                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/70 transition-all duration-200 hover:bg-white/10 hover:text-white"
+                              >
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 transition-colors group-hover:bg-white/10">
+                                  <Settings className="h-4 w-4 shrink-0" />
+                                </div>
+                                <span className="font-medium">Admin Panel</span>
+                              </Link>
+                            )}
+
+                            <Link
+                              href="/watchlist"
+                              onClick={closeProfileMenu}
+                              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/70 transition-all duration-200 hover:bg-white/10 hover:text-white"
+                            >
+                              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 transition-colors group-hover:bg-white/10">
+                                <Bookmark className="h-4 w-4 shrink-0" />
+                              </div>
+                              <span className="font-medium">Watchlist</span>
+                            </Link>
+
+                            <Link
+                              href="/dashboard/profile"
+                              onClick={closeProfileMenu}
+                              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/70 transition-all duration-200 hover:bg-white/10 hover:text-white"
+                            >
+                              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 transition-colors group-hover:bg-white/10">
+                                <User className="h-4 w-4 shrink-0" />
+                              </div>
+                              <span className="font-medium">My Profile</span>
+                            </Link>
+
+                            <div className="my-1 border-t border-white/5" />
+
+                            <button
+                              onClick={() => {
+                                logout();
+                                closeProfileMenu();
+                              }}
+                              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-400/70 transition-all duration-200 hover:bg-red-400/10 hover:text-red-400"
+                            >
+                              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-400/5 transition-colors group-hover:bg-red-400/10">
+                                <LogOut className="h-4 w-4 shrink-0" />
+                              </div>
+                              <span className="font-medium">Sign Out</span>
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               </div>
             ) : (
               <>
@@ -398,6 +511,12 @@ export function Navbar() {
         isOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         items={fullNavItems}
+      />
+
+      {/* Search Modal */}
+      <SearchModal
+        isOpen={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
       />
     </>
   );
