@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -484,10 +484,7 @@ export function MovieForm({ mode, movieId, initialMovie }: MovieFormProps) {
           </Button>
           <Button type="submit" variant="netflix" className="rounded-xl font-black uppercase tracking-widest" disabled={pending}>
             {pending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving…
-              </>
+              "Saving…"
             ) : mode === "create" ? (
               "Upload to catalog"
             ) : (

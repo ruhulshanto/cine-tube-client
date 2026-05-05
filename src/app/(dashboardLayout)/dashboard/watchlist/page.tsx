@@ -5,7 +5,7 @@ import { getWatchlist } from "@/services/interaction.services";
 import { MovieCard } from "@/components/movies/MovieCard";
 import { MovieCardSkeleton } from "@/components/movies/MovieCardSkeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { Heart, Loader2 } from "lucide-react";
+import { Heart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
 
@@ -74,4 +74,3 @@ export default function DashboardWatchlistPage() {
     </div>
   );
 }
-

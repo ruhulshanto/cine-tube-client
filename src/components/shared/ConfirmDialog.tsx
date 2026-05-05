@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -92,14 +92,7 @@ export function ConfirmDialog({
                 disabled={isLoading}
                 onClick={onConfirm}
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Please wait…
-                  </>
-                ) : (
-                  confirmLabel
-                )}
+                {isLoading ? "Please wait…" : confirmLabel}
               </Button>
             </div>
           </div>

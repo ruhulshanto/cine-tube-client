@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { resetPasswordSchema } from "@/zod/auth.validation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -148,7 +148,7 @@ export default function ResetPasswordPage() {
         {errorMsg && <p className="text-red-500">{errorMsg}</p>}
 
         <Button type="submit" disabled={isPending || missingToken}>
-          {isPending ? <Loader2 className="animate-spin" /> : "Reset Password"}
+          {isPending ? <Skeleton className="h-5 w-28 rounded-lg bg-white/30" /> : "Reset Password"}
         </Button>
       </form>
 

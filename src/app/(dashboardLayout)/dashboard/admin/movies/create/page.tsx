@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { MovieForm } from "@/components/admin/MovieForm";
-import { Loader2 } from "lucide-react";
+import { PageSkeleton } from "@/components/shared/AppSkeletons";
 
 export default function AdminCreateMoviePage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -16,11 +16,7 @@ export default function AdminCreateMoviePage() {
   }, [authLoading, user?.role, router]);
 
   if (authLoading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
+    return <PageSkeleton variant="dashboard" className="min-h-[40vh]" />;
   }
 
   if (user?.role !== "ADMIN") return null;

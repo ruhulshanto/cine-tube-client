@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CircleDollarSign, Film, LayoutDashboard, Loader2, Plus, ShieldCheck, Sparkles } from "lucide-react";
+import { PageSkeleton } from "@/components/shared/AppSkeletons";
+import { CircleDollarSign, Film, LayoutDashboard, Plus, ShieldCheck, Sparkles } from "lucide-react";
 
 export default function AdminDashboardHubPage() {
   const { user, isLoading } = useAuth();
@@ -18,11 +19,7 @@ export default function AdminDashboardHubPage() {
   }, [isLoading, user?.role, router]);
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
+    return <PageSkeleton variant="dashboard" className="min-h-[40vh]" />;
   }
 
   if (user?.role !== "ADMIN") return null;

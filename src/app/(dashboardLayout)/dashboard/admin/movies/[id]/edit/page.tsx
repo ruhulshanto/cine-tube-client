@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getMovieDetails } from "@/services/movie.services";
 import { MovieForm } from "@/components/admin/MovieForm";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2 } from "lucide-react";
+import { PageSkeleton } from "@/components/shared/AppSkeletons";
 
 export default function AdminEditMoviePage() {
   const params = useParams<{ id: string }>();
@@ -29,11 +29,7 @@ export default function AdminEditMoviePage() {
   const movie = data?.data;
 
   if (authLoading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
+    return <PageSkeleton variant="dashboard" className="min-h-[40vh]" />;
   }
 
   if (user?.role !== "ADMIN") return null;

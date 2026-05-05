@@ -17,12 +17,12 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleDollarSign,
-  Loader2,
   RefreshCcw,
   TriangleAlert,
   TrendingUp,
   Wallet,
 } from "lucide-react";
+import { PageSkeleton } from "@/components/shared/AppSkeletons";
 
 function formatUser(p: AdminPaymentRow["user"]) {
   const name = [p.firstName, p.lastName].filter(Boolean).join(" ").trim();
@@ -88,11 +88,7 @@ export default function AdminPaymentsPage() {
   }, [statusFilter]);
 
   if (authLoading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
+    return <PageSkeleton variant="dashboard" className="min-h-[40vh]" />;
   }
 
   if (user?.role !== "ADMIN") return null;
@@ -115,7 +111,7 @@ export default function AdminPaymentsPage() {
           onClick={() => refetch()}
           disabled={isFetching}
         >
-          <RefreshCcw className={cn("mr-2 h-4 w-4", isFetching && "animate-spin")} />
+          <RefreshCcw className={cn("mr-2 h-4 w-4", isFetching && "opacity-50")} />
           Refresh
         </Button>
       </div>

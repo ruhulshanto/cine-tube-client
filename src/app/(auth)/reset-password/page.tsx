@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import ResetPasswordPage from "./ResetPasswordPage";
+import { PageSkeleton } from "@/components/shared/AppSkeletons";
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="text-white p-10">Loading...</div>}>
+    <Suspense fallback={<PageSkeleton variant="auth" />}>
       <ResetPasswordPage />
     </Suspense>
   );

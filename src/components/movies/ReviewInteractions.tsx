@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Heart, Loader2, MessageCircle, Reply, X } from "lucide-react";
+import { Heart, MessageCircle, Reply, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
   getCommentsByReview,
@@ -60,7 +61,7 @@ function CommentLikeButton({ commentId, userId }: CommentLikeProps) {
       )}
     >
       {isPending ? (
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        <Skeleton className="h-3.5 w-3.5 rounded-full bg-white/30" />
       ) : (
         <Heart className={cn("h-3.5 w-3.5", likedByMe && "fill-[#e50914] text-[#e50914]")} />
       )}
@@ -143,7 +144,7 @@ function CommentThread({ comment, reviewId, userId, depth, onReplyPosted }: Comm
               className="h-9 flex-shrink-0 rounded-lg px-3"
               onClick={() => mutateReply(replyText.trim())}
             >
-              {replying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send"}
+              {replying ? "Sending" : "Send"}
             </Button>
           </div>
         )}
@@ -239,7 +240,7 @@ export function ReviewInteractions({ reviewId, userId }: ReviewInteractionsProps
             )}
           >
             {liking ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Skeleton className="h-4 w-4 rounded-full bg-white/30" />
             ) : (
               <Heart
                 className={cn(
@@ -262,7 +263,11 @@ export function ReviewInteractions({ reviewId, userId }: ReviewInteractionsProps
 
       <div className="mt-4 space-y-3">
         {commentsLoading ? (
-          <p className="text-sm text-zinc-400">Loading comments...</p>
+          <div className="space-y-2">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full rounded-xl bg-white/5" />
+            ))}
+          </div>
         ) : comments.length === 0 ? (
           <p className="text-sm text-zinc-500">No comments yet. Start the discussion.</p>
         ) : (
@@ -307,7 +312,7 @@ export function ReviewInteractions({ reviewId, userId }: ReviewInteractionsProps
           onClick={() => mutateComment(commentText.trim())}
           className="h-10 rounded-xl px-4"
         >
-          {commenting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Comment"}
+          {commenting ? "Commenting" : "Comment"}
         </Button>
       </div>
 

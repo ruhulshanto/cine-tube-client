@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { forgotPasswordSchema } from "@/zod/auth.validation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Mail, Loader2, ChevronRight } from "lucide-react";
+import { Mail, ChevronRight } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 
 export default function ForgotPasswordPage() {
@@ -104,7 +105,7 @@ export default function ForgotPasswordPage() {
           disabled={isPending}
         >
           {isPending ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Skeleton className="h-5 w-5 rounded-full bg-white/30" />
           ) : (
             <span className="flex items-center gap-2">
               Send Reset Link

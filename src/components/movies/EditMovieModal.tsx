@@ -4,7 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateMovie } from "@/services/movie.services";
 import { Movie } from "@/types/movie.types";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Save, Film, Image as ImageIcon, Video, FileText, Calendar, Clock, Sparkles, Loader2 } from "lucide-react";
+import { X, Save, Film, Image as ImageIcon, Video, FileText, Calendar, Clock, Sparkles } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -230,7 +231,7 @@ export function EditMovieModal({ movie, isOpen, onClose }: EditMovieModalProps) 
                     disabled={isPending}
                     className="flex-1 h-16 bg-primary hover:bg-[#b80711] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-sm shadow-2xl active:scale-[0.98] transition-all gap-3"
                   >
-                    {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                    {isPending ? <Skeleton className="h-5 w-5 rounded-full bg-white/30" /> : <Save className="w-5 h-5" />}
                     Save Master Copy
                   </Button>
                 </div>

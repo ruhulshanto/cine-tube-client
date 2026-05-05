@@ -10,14 +10,13 @@ import {
   Clock,
   Check,
   X,
-  Loader2,
   AlertTriangle,
   Tag,
   Eye,
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -508,10 +507,7 @@ export function MovieReviews({
               disabled={isReviewing || !reviewText.trim() || !hasAccess}
             >
               {isReviewing ? (
-                <>
-                  <Spinner size="sm" className="text-white" />
-                  Submitting…
-                </>
+                "Submitting…"
               ) : (
                 <>
                   Post Review
@@ -532,10 +528,6 @@ export function MovieReviews({
 
         {reviewsLoading ? (
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-semibold text-zinc-400">
-              <Loader2 className="h-4 w-4 animate-spin text-[#e50914]" />
-              Loading reviews…
-            </div>
             <div className="space-y-6">
               {[1, 2, 3].map((i) => (
                 <div
@@ -784,10 +776,7 @@ export function MovieReviews({
                           </Button>
                           <Button variant="netflix" size="sm" onClick={handleUpdate} disabled={isUpdating} className="h-9 px-6 rounded-lg text-xs tracking-widest font-black uppercase gap-2">
                             {isUpdating ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Saving…
-                              </>
+                              "Saving…"
                             ) : (
                               "Save Changes"
                             )}
@@ -841,8 +830,8 @@ export function MovieReviews({
                                disabled={isStatusPending || isDeletePending}
                                className="h-11 sm:h-10 w-full sm:w-auto justify-center px-6 rounded-xl bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white gap-2 transition-all font-black text-[10px] uppercase tracking-widest disabled:opacity-40"
                              >
-                               {isStatusPending ? (
-                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                             {isStatusPending ? (
+                                 <Skeleton className="h-3.5 w-3.5 rounded-full bg-white/30" />
                                ) : (
                                  <Check className="w-3.5 h-3.5" />
                                )}{" "}
@@ -855,8 +844,8 @@ export function MovieReviews({
                                disabled={isDeletePending || isStatusPending}
                                className="h-11 sm:h-10 w-full sm:w-auto justify-center px-6 rounded-xl bg-orange-500/10 border-orange-500/20 text-orange-500 hover:bg-orange-500 hover:text-white gap-2 transition-all font-black text-[10px] uppercase tracking-widest disabled:opacity-40"
                              >
-                               {isDeletePending ? (
-                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                             {isDeletePending ? (
+                                 <Skeleton className="h-3.5 w-3.5 rounded-full bg-white/30" />
                                ) : (
                                  <X className="w-3.5 h-3.5" />
                                )}{" "}
@@ -873,8 +862,8 @@ export function MovieReviews({
                              disabled={isDeletePending || isStatusPending}
                              className="h-11 sm:h-10 w-full sm:w-auto justify-center px-6 rounded-xl bg-rose-500/10 border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white gap-2 transition-all font-black text-[10px] uppercase tracking-widest disabled:opacity-40"
                            >
-                             {isDeletePending ? (
-                               <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                           {isDeletePending ? (
+                               <Skeleton className="h-3.5 w-3.5 rounded-full bg-white/30" />
                              ) : (
                                <Trash2 className="w-3.5 h-3.5" />
                              )}{" "}

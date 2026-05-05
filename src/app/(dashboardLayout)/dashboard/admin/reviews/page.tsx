@@ -15,11 +15,11 @@ import {
   AlertCircle,
   CheckCircle2,
   Film,
-  Loader2,
   RefreshCcw,
   ShieldAlert,
   XCircle,
 } from "lucide-react";
+import { PageSkeleton } from "@/components/shared/AppSkeletons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -114,11 +114,7 @@ export default function AdminReviewModerationPage() {
       : null;
 
   if (authLoading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
+    return <PageSkeleton variant="dashboard" className="min-h-[40vh]" />;
   }
 
   if (user?.role !== "ADMIN") {
@@ -149,7 +145,7 @@ export default function AdminReviewModerationPage() {
           disabled={isFetching}
           className="h-12 shrink-0 gap-2 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10"
         >
-          <RefreshCcw className={cn("h-4 w-4", isFetching && "animate-spin")} />
+          <RefreshCcw className={cn("h-4 w-4", isFetching && "opacity-50")} />
           Refresh
         </Button>
       </div>
@@ -262,7 +258,7 @@ export default function AdminReviewModerationPage() {
                       onClick={() => moderateMutation.mutate({ id: rid, status: "APPROVED" })}
                     >
                       {isBusy && moderateMutation.variables?.status === "APPROVED" ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Skeleton className="h-4 w-4 rounded-full bg-white/30" />
                       ) : (
                         <CheckCircle2 className="h-4 w-4" />
                       )}
@@ -276,7 +272,7 @@ export default function AdminReviewModerationPage() {
                       onClick={() => moderateMutation.mutate({ id: rid, status: "REJECTED" })}
                     >
                       {isBusy && moderateMutation.variables?.status === "REJECTED" ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Skeleton className="h-4 w-4 rounded-full bg-white/30" />
                       ) : (
                         <XCircle className="h-4 w-4" />
                       )}

@@ -18,7 +18,9 @@ import {
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { Loader2, ChevronUp, ChevronDown, Plus, X } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PageSkeleton } from "@/components/shared/AppSkeletons";
+import { ChevronUp, ChevronDown, Plus, X } from "lucide-react";
 
 function moveItem<T>(arr: T[], from: number, to: number) {
   if (from === to) return arr;
@@ -155,11 +157,7 @@ export default function HomeCurationAdminPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
+    return <PageSkeleton variant="dashboard" className="min-h-[40vh]" />;
   }
 
   if (user?.role !== "ADMIN") return null;
@@ -339,8 +337,10 @@ export default function HomeCurationAdminPage() {
               />
 
               {searchQuery.isLoading && debouncedSearch.trim() ? (
-                <div className="flex justify-center py-6">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <div className="space-y-2 py-2">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="h-14 w-full rounded-xl bg-white/5" />
+                  ))}
                 </div>
               ) : null}
 
@@ -379,4 +379,3 @@ export default function HomeCurationAdminPage() {
     </div>
   );
 }
-

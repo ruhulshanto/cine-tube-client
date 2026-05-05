@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import PaymentSuccessPage from "./PaymentSuccessPage";
+import { PageSkeleton } from "@/components/shared/AppSkeletons";
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="p-10 text-white">Loading Payment Success...</div>}>
+    <Suspense fallback={<PageSkeleton variant="detail" />}>
       <PaymentSuccessPage />
     </Suspense>
   );

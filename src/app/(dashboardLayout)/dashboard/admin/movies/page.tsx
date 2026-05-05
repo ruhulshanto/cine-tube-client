@@ -15,8 +15,11 @@ import { GENRE_OPTIONS } from "@/lib/adminMovie.schemas";
 import { adminInputClass, adminOptionClass, adminSelectClass } from "@/lib/adminFormStyles";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Film, Loader2, Pencil, Plus, RefreshCcw, Search, Trash2 } from "lucide-react";
+import { PageSkeleton } from "@/components/shared/AppSkeletons";
+import { Film, Pencil, Plus, RefreshCcw, Search, Trash2 } from "lucide-react";
 import type { Movie } from "@/types/movie.types";
+
+const ITEMS_PER_PAGE = 10;
 
 export default function AdminMoviesPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -27,6 +30,7 @@ export default function AdminMoviesPage() {
   const [genreFilter, setGenreFilter] = useState("");
   const [pricingFilter, setPricingFilter] = useState<"" | "FREE" | "PREMIUM" | "RENTAL">("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (authLoading) return;
@@ -34,7 +38,10 @@ export default function AdminMoviesPage() {
   }, [authLoading, user?.role, router]);
 
   useEffect(() => {
-    const t = window.setTimeout(() => setDebouncedSearch(searchInput), 400);
+    const t = window.setTimeout(() => {
+      setDebouncedSearch(searchInput);
+      setCurrentPage(1);
+    }, 400);
     return () => window.clearTimeout(t);
   }, [searchInput]);
 
@@ -58,6 +65,11 @@ export default function AdminMoviesPage() {
     return raw.filter((m: Movie) => m.pricingType === pricingFilter);
   }, [data?.data, pricingFilter]);
 
+  const totalPages = Math.ceil(movies.length / ITEMS_PER_PAGE);
+  const safeCurrentPage = totalPages > 0 ? Math.min(currentPage, totalPages) : 1;
+  const start = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedMovies = movies.slice(start, start + ITEMS_PER_PAGE);
+
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteMovie(id),
     onSuccess: () => {
@@ -74,11 +86,7 @@ export default function AdminMoviesPage() {
   const deleteTarget = deleteId ? (data?.data ?? []).find((m: Movie) => m.id === deleteId) : null;
 
   if (authLoading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
+    return <PageSkeleton variant="dashboard" className="min-h-[40vh]" />;
   }
 
   if (user?.role !== "ADMIN") return null;
@@ -100,7 +108,7 @@ export default function AdminMoviesPage() {
             onClick={() => refetch()}
             disabled={isFetching}
           >
-            <RefreshCcw className={cn("mr-2 h-4 w-4", isFetching && "animate-spin")} />
+            <RefreshCcw className={cn("mr-2 h-4 w-4", isFetching && "opacity-50")} />
             Refresh
           </Button>
           <Link href="/dashboard/admin/movies/create">
@@ -128,7 +136,10 @@ export default function AdminMoviesPage() {
             <div className="flex flex-wrap gap-3">
               <select
                 value={genreFilter}
-                onChange={(e) => setGenreFilter(e.target.value)}
+                onChange={(e) => {
+                  setGenreFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className={cn("min-w-[160px]", adminSelectClass)}
               >
                 <option value="" className={adminOptionClass}>
@@ -142,7 +153,10 @@ export default function AdminMoviesPage() {
               </select>
               <select
                 value={pricingFilter}
-                onChange={(e) => setPricingFilter(e.target.value as typeof pricingFilter)}
+                onChange={(e) => {
+                  setPricingFilter(e.target.value as typeof pricingFilter);
+                  setCurrentPage(1);
+                }}
                 className={cn("min-w-[140px]", adminSelectClass)}
               >
                 <option value="" className={adminOptionClass}>
@@ -188,7 +202,7 @@ export default function AdminMoviesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.06]">
-                  {movies.map((m: Movie) => (
+                  {paginatedMovies.map((m: Movie) => (
                     <tr key={m.id} className="hover:bg-white/[0.02]">
                       <td className="px-6 py-4 font-semibold text-white">
                         <div className="flex items-center gap-4 min-w-0">
@@ -245,6 +259,31 @@ export default function AdminMoviesPage() {
                   ))}
                 </tbody>
               </table>
+              <div className="flex items-center justify-end gap-3 border-t border-white/10 px-6 py-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl border-white/15"
+                  disabled={safeCurrentPage === 1}
+                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                >
+                  Prev
+                </Button>
+                <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
+                  Page {safeCurrentPage} of {totalPages}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl border-white/15"
+                  disabled={safeCurrentPage === totalPages}
+                  onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

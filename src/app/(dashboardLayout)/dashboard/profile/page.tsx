@@ -2,8 +2,9 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { motion } from "framer-motion";
-import { Mail, Calendar, Shield, Bookmark, Play, Heart, Star, Sparkles, Camera, Loader2 } from "lucide-react";
+import { Mail, Calendar, Shield, Bookmark, Play, Heart, Star, Sparkles, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageSkeleton } from "@/components/shared/AppSkeletons";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -99,11 +100,7 @@ export default function DashboardProfilePage() {
   }, [previewUrl]);
 
   if (isLoading || !user) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
+    return <PageSkeleton variant="dashboard" className="min-h-[40vh]" />;
   }
 
   return (
@@ -170,10 +167,7 @@ export default function DashboardProfilePage() {
                   disabled={!selectedFile || uploadMutation.isPending}
                 >
                   {uploadMutation.isPending ? (
-                    <span className="inline-flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Uploading...
-                    </span>
+                    "Uploading..."
                   ) : (
                     "Save photo"
                   )}

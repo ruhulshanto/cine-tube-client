@@ -63,7 +63,7 @@
   }
   body {
     @apply text-foreground min-h-screen antialiased selection:bg-primary/30 selection:text-white;
-    background: radial-gradient(circle at 50% -20%, #1a1a1a 0%, #0b0b0b 100%);
+    background: transparent;
     background-attachment: fixed;
   }
   html {

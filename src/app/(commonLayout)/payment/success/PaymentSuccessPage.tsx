@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { CheckCircle2, ArrowRight, Film, CreditCard, Sparkles, Loader2, AlertCircle } from "lucide-react";
+import { CheckCircle2, ArrowRight, Film, CreditCard, Sparkles, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { httpClient } from "@/lib/axios/httpClient";
@@ -103,7 +104,7 @@ export default function PaymentSuccessPage() {
           <div className="mt-8 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
               {status === "VERIFYING" ? (
-                <Loader2 className="w-5 h-5 text-zinc-500 animate-spin" />
+                <Skeleton className="h-5 w-5 rounded-full bg-white/20" />
               ) : status === "COMPLETED" ? (
                 <CheckCircle2 className="w-5 h-5 text-emerald-500" />
               ) : (

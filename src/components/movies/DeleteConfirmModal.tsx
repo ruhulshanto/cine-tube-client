@@ -3,7 +3,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteMovie } from "@/services/movie.services";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Trash2, AlertTriangle, Loader2 } from "lucide-react";
+import { X, Trash2, AlertTriangle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -73,7 +74,7 @@ export function DeleteConfirmModal({ movieId, movieTitle, isOpen, onClose }: Del
                     disabled={isPending}
                     className="h-16 bg-primary hover:bg-[#b80711] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all active:scale-95 gap-3"
                  >
-                    {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                    {isPending ? <Skeleton className="h-5 w-5 rounded-full bg-white/30" /> : <Trash2 className="w-5 h-5" />}
                     Confirm Deletion
                  </Button>
                  <Button 

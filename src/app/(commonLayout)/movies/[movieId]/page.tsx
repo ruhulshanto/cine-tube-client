@@ -5,9 +5,8 @@ import { getMovieDetails } from "@/services/movie.services";
 import { getMovieReviews, postReview } from "@/services/interaction.services";
 import { useParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { FullScreenLoader } from "@/components/ui/spinner";
+import { PageSkeleton } from "@/components/shared/AppSkeletons";
 import { MovieHero } from "@/components/movies/MovieHero";
 import { MovieReviews } from "@/components/movies/MovieReviews";
 import { useMovieAccess } from "@/hooks/useMovieAccess";
@@ -72,7 +71,7 @@ export default function MovieDetailsPage() {
   // Only check if user is logged in and movie is NOT free
   const { hasAccess } = useMovieAccess(movieId as string, movie?.pricingType || "");
 
-  if (movieLoading) return <FullScreenLoader className="min-h-[70vh]" label="Loading movie details..." />;
+  if (movieLoading) return <PageSkeleton variant="detail" />;
   if (!movie) return <div className="text-center py-20 text-zinc-400">Movie not found</div>;
 
   return (

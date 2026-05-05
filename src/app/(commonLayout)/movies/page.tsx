@@ -13,9 +13,10 @@ import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { GENRE_OPTIONS } from "@/lib/adminMovie.schemas";
 import { publicSelectClass } from "@/lib/publicFormStyles";
+import { PageSkeleton } from "@/components/shared/AppSkeletons";
 
 const PAGE_SIZE = 10;
 
@@ -143,23 +144,13 @@ function MoviesPagination({
 }
 
 function MoviesPageSkeleton() {
-  return (
-    <div className="container mx-auto max-w-[1600px] px-6 py-12 md:px-12 lg:px-20">
-      <div className="mb-12 h-40 animate-pulse rounded-2xl bg-white/5" />
-      <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-10 xl:grid-cols-5">
-        {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-          <MovieCardSkeleton key={`skeleton-${i}`} />
-        ))}
-      </div>
-    </div>
-  );
+  return <PageSkeleton variant="browse" />;
 }
 
 function MoviesPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const qParam = searchParams.get("q") ?? "";
-  const pageParam = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
   const genreParam = searchParams.get("genre") ?? "";
   const minRatingParam = searchParams.get("minRating") ?? "";
   const releaseYearParam = searchParams.get("releaseYear") ?? "";
@@ -168,7 +159,7 @@ function MoviesPageContent() {
   const sortOrderParam = searchParams.get("sortOrder") ?? "desc";
 
   const [searchTerm, setSearchTerm] = useState(qParam);
-  const [page, setPage] = useState(pageParam);
+  const [currentPage, setCurrentPage] = useState(1);
   const debouncedSearch = useDebounce(searchTerm, 500);
 
   // Browse filters (wired to backend query keys)
@@ -187,31 +178,25 @@ function MoviesPageContent() {
   }, [qParam]);
 
   useEffect(() => {
-    setPage(1);
+    setCurrentPage(1);
   }, [debouncedSearch]);
 
   // Keep URL in sync while typing numeric/text filters (debounced).
   useEffect(() => {
     if (debouncedReleaseYear !== releaseYearParam) {
-      setPage(1);
-      updateUrlFromBrowseState({ page: 1, releaseYear: debouncedReleaseYear });
+      setCurrentPage(1);
+      updateUrlFromBrowseState({ releaseYear: debouncedReleaseYear });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedReleaseYear]);
 
   useEffect(() => {
     if (debouncedStreamingPlatform !== streamingPlatformParam) {
-      setPage(1);
-      updateUrlFromBrowseState({ page: 1, streamingPlatform: debouncedStreamingPlatform });
+      setCurrentPage(1);
+      updateUrlFromBrowseState({ streamingPlatform: debouncedStreamingPlatform });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedStreamingPlatform]);
-
-  // If user refreshes or navigates with browser back/forward, sync state from URL.
-  useEffect(() => {
-    if (pageParam !== page) setPage(pageParam);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageParam]);
 
   useEffect(() => {
     if (genreParam !== genre) setGenre(genreParam);
@@ -222,23 +207,19 @@ function MoviesPageContent() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [page]);
+  }, [currentPage]);
 
   const commitSearchToUrl = () => {
     const trimmed = searchTerm.trim();
     const params = new URLSearchParams(searchParams.toString());
     if (trimmed) params.set("q", trimmed);
     else params.delete("q");
-    // New search should restart pagination.
-    params.set("page", "1");
-
     const qs = params.toString();
-    setPage(1);
+    setCurrentPage(1);
     router.replace(`/movies${qs ? `?${qs}` : ""}`, { scroll: false });
   };
 
   const updateUrlFromBrowseState = (next: {
-    page?: number;
     genre?: string;
     minRating?: string;
     releaseYear?: string;
@@ -247,9 +228,6 @@ function MoviesPageContent() {
     sortOrder?: string;
   } = {}) => {
     const params = new URLSearchParams(searchParams.toString());
-
-    const nextPage = next.page ?? page;
-    params.set("page", String(nextPage));
 
     const nextGenre = next.genre ?? genre;
     if (nextGenre) params.set("genre", nextGenre);
@@ -278,9 +256,7 @@ function MoviesPageContent() {
   };
 
   const handlePageChange = (p: number) => {
-    const safePage = Math.max(1, p);
-    setPage(safePage);
-    updateUrlFromBrowseState({ page: safePage });
+    setCurrentPage(Math.max(1, Math.min(p, totalPages || 1)));
   };
 
   const {
@@ -292,11 +268,11 @@ function MoviesPageContent() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["movies", debouncedSearch, page, genre, minRating, releaseYear, streamingPlatform, sortBy, sortOrder],
+    queryKey: ["movies", debouncedSearch, genre, minRating, releaseYear, streamingPlatform, sortBy, sortOrder],
     queryFn: () =>
       getMovies({
-        page: String(page),
-        limit: String(PAGE_SIZE),
+        page: "1",
+        limit: "100",
         sortBy,
         sortOrder,
         ...(debouncedSearch.trim() ? { searchTerm: debouncedSearch.trim() } : {}),
@@ -309,11 +285,19 @@ function MoviesPageContent() {
   });
 
   const movies = response?.data || [];
-  const meta = response?.meta;
-  const total = meta?.total ?? 0;
-  const totalPages = meta?.totalPages ?? (total > 0 ? 1 : 0);
+  const total = movies.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const paginatedMovies = movies.slice(start, start + PAGE_SIZE);
 
   const showSkeleton = isLoading && !isPlaceholderData;
+  const errorMessage = error instanceof Error ? error.message : "Please check your connection or try again.";
+
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   return (
     <div className="container mx-auto max-w-[1600px] px-6 py-12 md:px-12 lg:px-20 animate-in fade-in duration-700">
@@ -364,11 +348,7 @@ function MoviesPageContent() {
       {isError && (
         <Alert className="mb-8 rounded-2xl border border-rose-500/25 bg-rose-500/10 text-rose-100">
           <AlertTitle>Couldn’t load the catalog</AlertTitle>
-          <AlertDescription>
-            {typeof (error as any)?.message === "string"
-              ? (error as any).message
-              : "Please check your connection or try again."}
-          </AlertDescription>
+          <AlertDescription>{errorMessage}</AlertDescription>
           <AlertAction>
             <Button
               type="button"
@@ -393,8 +373,8 @@ function MoviesPageContent() {
             onChange={(e) => {
               const v = e.target.value;
               setGenre(v);
-              setPage(1);
-              updateUrlFromBrowseState({ page: 1, genre: v });
+              setCurrentPage(1);
+              updateUrlFromBrowseState({ genre: v });
             }}
             className={publicSelectClass}
           >
@@ -416,8 +396,8 @@ function MoviesPageContent() {
             onChange={(e) => {
               const v = e.target.value;
               setMinRating(v);
-              setPage(1);
-              updateUrlFromBrowseState({ page: 1, minRating: v });
+              setCurrentPage(1);
+              updateUrlFromBrowseState({ minRating: v });
             }}
             className={publicSelectClass}
           >
@@ -447,8 +427,8 @@ function MoviesPageContent() {
             value={releaseYear}
             onChange={(e) => setReleaseYear(e.target.value)}
             onBlur={() => {
-              setPage(1);
-              updateUrlFromBrowseState({ page: 1 });
+              setCurrentPage(1);
+              updateUrlFromBrowseState();
             }}
             placeholder="e.g. 2021"
             className="h-11 rounded-2xl border-white/5 bg-white/5 px-4 text-sm text-white focus-visible:bg-white/10 focus-visible:ring-primary/20"
@@ -461,8 +441,8 @@ function MoviesPageContent() {
             value={streamingPlatform}
             onChange={(e) => setStreamingPlatform(e.target.value)}
             onBlur={() => {
-              setPage(1);
-              updateUrlFromBrowseState({ page: 1 });
+              setCurrentPage(1);
+              updateUrlFromBrowseState();
             }}
             placeholder="e.g. netflix, prime, cloud…"
             className="h-11 rounded-2xl border-white/5 bg-white/5 px-4 text-sm text-white focus-visible:bg-white/10 focus-visible:ring-primary/20"
@@ -476,8 +456,8 @@ function MoviesPageContent() {
             onChange={(e) => {
               setSortBy(e.target.value);
               setSortOrder("desc");
-              setPage(1);
-              updateUrlFromBrowseState({ page: 1, sortBy: e.target.value, sortOrder: "desc" });
+              setCurrentPage(1);
+              updateUrlFromBrowseState({ sortBy: e.target.value, sortOrder: "desc" });
             }}
             className={publicSelectClass}
           >
@@ -511,9 +491,8 @@ function MoviesPageContent() {
               setStreamingPlatform("");
               setSortBy("createdAt");
               setSortOrder("desc");
-              setPage(1);
+              setCurrentPage(1);
               updateUrlFromBrowseState({
-                page: 1,
                 genre: "",
                 minRating: "",
                 releaseYear: "",
@@ -537,8 +516,11 @@ function MoviesPageContent() {
       ) : movies.length > 0 ? (
         <div className="relative">
           {isFetching && isPlaceholderData && (
-            <div className="absolute inset-0 z-10 flex min-h-[40vh] items-center justify-center pointer-events-none">
-              <Spinner size="xl" className="drop-shadow-2xl" />
+            <div className="absolute inset-0 z-10 grid grid-cols-2 gap-8 bg-[#0b0b0b]/70 backdrop-blur-sm md:grid-cols-3 lg:grid-cols-4 lg:gap-10 xl:grid-cols-5">
+              {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                <MovieCardSkeleton key={`transition-skeleton-${i}`} />
+              ))}
+              <Skeleton className="absolute bottom-0 left-0 right-0 h-24 rounded-none bg-gradient-to-t from-[#0b0b0b] to-transparent" />
             </div>
           )}
           <div
@@ -547,13 +529,13 @@ function MoviesPageContent() {
               isFetching && isPlaceholderData && "pointer-events-none opacity-40 blur-sm scale-[0.99]"
             )}
           >
-            {movies.map((movie, index) => (
+            {paginatedMovies.map((movie, index) => (
               <MovieCard key={movie.id || `movie-${index}`} movie={movie} />
             ))}
           </div>
 
           <MoviesPagination
-            page={page}
+            page={currentPage}
             totalPages={totalPages}
             total={total}
             isFetching={isFetching}

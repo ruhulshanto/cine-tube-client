@@ -10,8 +10,9 @@ import { getAdminDashboardStats, getAdminUserStats } from "@/services/analytics.
 import { useAdminPendingReviewCount } from "@/hooks/useAdminPendingReviewCount";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageSkeleton } from "@/components/shared/AppSkeletons";
 import type { Review } from "@/types/movie.types";
-import { Clock3, CircleDollarSign, Star, Users, BarChart3, Loader2 } from "lucide-react";
+import { Clock3, CircleDollarSign, Star, Users, BarChart3 } from "lucide-react";
 
 function reviewerName(r: Review) {
   const u = r.user as any;
@@ -76,11 +77,7 @@ export default function AdminInsightsPage() {
   const pendingPreview = pendingPreviewResp?.data ?? [];
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
+    return <PageSkeleton variant="dashboard" className="min-h-[40vh]" />;
   }
 
   if (!enabled) return null;
@@ -279,4 +276,3 @@ export default function AdminInsightsPage() {
     </div>
   );
 }
-
