@@ -16,10 +16,7 @@ export function EmptyState({ icon: Icon, title, description, action }: EmptyStat
       {/* Icon Icon Container - Apple Glass Style */}
       <div className="relative z-10 w-24 h-24 rounded-[1.5rem] bg-white/5 border border-white/10 flex items-center justify-center mb-8 shadow-[0_16px_32px_rgba(0,0,0,0.4)] transition-transform hover:scale-105 duration-500">
         <Icon className="w-10 h-10 text-primary drop-shadow-[0_0_10px_rgba(229,9,20,0.5)]" />
-        {/* Flare Detail */}
-        <div className="absolute -top-2 -right-2 p-1.5 rounded-lg bg-primary/20 backdrop-blur-md border border-primary/30">
-           <Sparkles className="w-3 h-3 text-primary" />
-        </div>
+        
       </div>
 
       {/* Primary Content */}

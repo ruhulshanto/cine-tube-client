@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { PageSkeleton } from "@/components/shared/AppSkeletons";
 import { MovieHero } from "@/components/movies/MovieHero";
 import { MovieReviews } from "@/components/movies/MovieReviews";
+import { RelatedMovies } from "@/components/movies/RelatedMovies";
 import { useMovieAccess } from "@/hooks/useMovieAccess";
 import { ADMIN_PENDING_REVIEW_COUNT_QUERY_KEY } from "@/hooks/useAdminPendingReviewCount";
 import { cn } from "@/lib/utils";
@@ -154,6 +155,15 @@ export default function MovieDetailsPage() {
             </TabsContent>
          </Tabs>
       </div>
+
+      {movie && (
+        <div className="mt-12">
+          <RelatedMovies 
+            currentMovieId={movie.id} 
+            genres={movie.genres} 
+          />
+        </div>
+      )}
     </div>
   );
 }

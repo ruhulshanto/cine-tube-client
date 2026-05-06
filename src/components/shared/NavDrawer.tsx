@@ -88,6 +88,7 @@ export function NavDrawer({ isOpen, onClose, items }: NavDrawerProps) {
             initial="hidden"
             animate="visible"
             exit="exit"
+            onMouseLeave={onClose}
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="fixed left-0 top-0 z-[200] flex h-dvh w-[min(400px,90vw)] flex-col overflow-hidden border border-balck/20 bg-black/10 shadow-2xl backdrop-blur-xl"
           >

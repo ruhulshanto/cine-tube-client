@@ -11,17 +11,20 @@ interface MovieRowProps {
   title: string;
   movies: Movie[];
   isLoading?: boolean;
+  showSubtitle?: boolean;
 }
 
-export function MovieRow({ title, movies, isLoading }: MovieRowProps) {
+export function MovieRow({ title, movies, isLoading, showSubtitle = true }: MovieRowProps) {
   return (
     <section className="py-12 space-y-8 animate-in slide-in-from-bottom-8 duration-1000 ease-out">
       <div className="container mx-auto px-6 md:px-12 lg:px-20 flex items-end justify-between">
         <div className="space-y-1">
-          <div className="flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.4em] text-primary">
-            <Sparkles className="w-3.5 h-3.5 fill-current" />
-            <span>Curated Collection</span>
-          </div>
+          {showSubtitle && (
+            <div className="flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.4em] text-primary">
+              <Sparkles className="w-3.5 h-3.5 fill-current" />
+              <span>Curated Collection</span>
+            </div>
+          )}
           <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase leading-none">
             {title}
           </h2>
