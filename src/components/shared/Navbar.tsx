@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Menu,
   X,
   ChevronDown,
   LogOut,
@@ -14,6 +13,21 @@ import {
   Settings,
   Search,
   Bookmark,
+  Home,
+  Gift,
+  CreditCard,
+  Compass,
+  Info,
+  Globe,
+  Film,
+  LayoutGrid,
+  Tv,
+  List,
+  Target,
+  BookOpen,
+  Shield,
+  ShoppingBag,
+  HelpCircle,
 } from "lucide-react";
 import { HiOutlineMenu } from "react-icons/hi";
 import { NavDrawer } from "@/components/shared/NavDrawer";
@@ -21,28 +35,32 @@ import { SearchModal } from "@/components/shared/SearchModal";
 import { useAuth } from "@/context/AuthContext";
 
 const fullNavItems = [
-  { label: "Home", href: "/" },
-  { label: "Live TV", href: "/live-tv" },
+  { label: "Home", href: "/", icon: Home },
+  { label: "Live TV", href: "/live-tv", icon: Tv },
+  { label: "Gift Cards", href: "/gift-cards", icon: Gift },
+  { label: "Pricing", href: "/pricing", icon: CreditCard },
   {
     label: "Browse",
     href: "/movies",
+    icon: Compass,
     submenu: [
-      { label: "By Region", href: "/browse/region" },
-      { label: "By Genre", href: "/browse/genre" },
-      { label: "By Categories", href: "/browse/categories" },
-      { label: "Web Shows", href: "/browse/web-shows" },
-      { label: "All Titles", href: "/movies" },
+      { label: "By Region", href: "/browse/region", icon: Globe },
+      { label: "By Genre", href: "/browse/genre", icon: Film },
+      { label: "By Categories", href: "/browse/categories", icon: LayoutGrid },
+      { label: "Web Shows", href: "/browse/web-shows", icon: Tv },
+      { label: "All Titles", href: "/movies", icon: List },
     ],
   },
   {
     label: "About",
     href: "/about",
+    icon: Info,
     submenu: [
-      { label: "Mission", href: "/about" },
-      { label: "Our Story", href: "/story" },
-      { label: "Responsibilities", href: "/responsibilities" },
-      { label: "Merch Store", href: "/merch" },
-      { label: "Help Center", href: "/help" },
+      { label: "Mission", href: "/about", icon: Target },
+      { label: "Our Story", href: "/story", icon: BookOpen },
+      { label: "Responsibilities", href: "/responsibilities", icon: Shield },
+      { label: "Merch Store", href: "/merch", icon: ShoppingBag },
+      { label: "Help Center", href: "/help", icon: HelpCircle },
     ],
   },
 ];
@@ -84,6 +102,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const profileImageUrl = user?.profileImage || user?.avatar || "";
   const displayName = user ? getDisplayName(user) : "User";
@@ -156,21 +175,30 @@ export function Navbar() {
           <div className="flex items-center gap-4">
             <motion.button
               onClick={() => {
-                setMobileOpen(false);
-                setDrawerOpen(true);
-              }}
-              onFocus={() => {
-                setMobileOpen(false);
-                setDrawerOpen(true);
+                if (window.innerWidth < 768) {
+                  setDrawerOpen(false);
+                  setMobileOpen((prev) => !prev);
+                } else {
+                  setMobileOpen(false);
+                  setDrawerOpen(true);
+                }
               }}
               onPointerEnter={() => {
-                setMobileOpen(false);
-                setDrawerOpen(true);
+                if (window.innerWidth >= 768) {
+                  setMobileOpen(false);
+                  setDrawerOpen(true);
+                }
+              }}
+              onFocus={() => {
+                if (window.innerWidth >= 768) {
+                  setMobileOpen(false);
+                  setDrawerOpen(true);
+                }
               }}
               whileHover={{ scale: 1.3 }}
               whileTap={{ scale: 0.95 }}
               className="group inline-flex h-12 w-12 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all duration-200 hover:bg-white/20 hover:border-white/30"
-              aria-label="Open menu"
+              aria-label={mobileOpen || drawerOpen ? "Close menu" : "Open menu"}
             >
               <HiOutlineMenu className="h-6 w-6" />
             </motion.button>
@@ -183,24 +211,24 @@ export function Navbar() {
             </Link>
           </div>
 
-          <div className="hidden items-center gap-2 md:flex">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
+            <div className="hidden items-center gap-2 md:flex">
+              {navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-white/80 transition hover:bg-white/10 hover:text-white"
+                  aria-label={item.label}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <button
+                onClick={() => setSearchModalOpen(true)}
                 className="inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-white/80 transition hover:bg-white/10 hover:text-white"
-                aria-label={item.label}
+                aria-label="Search"
               >
-                {item.label}
-              </Link>
-            ))}
-            <button
-              onClick={() => setSearchModalOpen(true)}
-              className="inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-white/80 transition hover:bg-white/10 hover:text-white"
-              aria-label="Search"
-            >
-              <Search className="h-4 w-4" />
-            </button>
+                <Search className="h-4 w-4" />
+              </button>
           </div>
 
           <div className="flex items-center gap-2">
@@ -227,7 +255,7 @@ export function Navbar() {
                 <motion.div
                   initial={false}
                   animate={{
-                    width: profileOpen ? 280 : "100%",
+                    width: profileOpen ? (window.innerWidth < 768 ? 220 : 280) : "100%",
                     borderRadius: profileOpen ? 28 : 99,
                     backgroundColor: profileOpen
                       ? "rgba(255, 255, 255, 0.12)"
@@ -236,7 +264,6 @@ export function Navbar() {
                       ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
                       : "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
                   }}
-                  
                   transition={{
                     type: "tween",
                     ease: [0.23, 1, 0.32, 1],
@@ -261,7 +288,7 @@ export function Navbar() {
                         <span className="flex h-full w-full items-center justify-center bg-linear-to-br from-[#e50914] to-[#b80711] text-xs font-bold uppercase text-white shadow-inner">
                           {initials}
                         </span>
-                      )}  
+                      )}
                     </div>
                     <div className="hidden md:flex flex-col leading-tight min-w-0">
                       <span className="text-sm font-semibold text-white truncate">
@@ -371,18 +398,7 @@ export function Navbar() {
               </>
             )}
 
-            <motion.button
-              type="button"
-              onClick={() => setMobileOpen((value) => !value)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 md:hidden"
-              aria-expanded={mobileOpen}
-            >
-              {mobileOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
-            </motion.button>
+
           </div>
         </div>
 
@@ -395,112 +411,110 @@ export function Navbar() {
               transition={{ duration: 0.22 }}
               className="md:hidden"
             >
-              <div className="space-y-4 border border-white/20 bg-white/10 px-4 py-5 backdrop-blur-xl">
+              <div className="space-y-2 border border-white/20 bg-white/10 px-4 py-5 backdrop-blur-xl max-h-[70vh] overflow-y-auto">
                 <div className="grid gap-2">
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      scroll={item.label === "Search" ? false : true}
-                      onClick={() => setMobileOpen(false)}
-                      className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-md transition hover:bg-white/20"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-
-                <div className="grid gap-2 rounded-lg border border-white/20 bg-white/10 p-3 backdrop-blur-xl">
-                  {quickLinks.slice(0, 5).map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className="rounded-lg bg-white/10 px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-md transition hover:bg-white/20"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-
-                <div className="grid gap-3">
-                  {isAuthenticated && user ? (
-                    <>
-                      <div className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 backdrop-blur-md">
-                        <p className="text-sm font-semibold text-white">
-                          {user.firstName && user.lastName
-                            ? `${user.firstName} ${user.lastName}`
-                            : user.username || user.email.split("@")[0]}
-                        </p>
-                        <p className="text-xs text-white/60">{user.email}</p>
-                        <p className="text-xs text-[#e50914] font-semibold mt-2 uppercase tracking-wider">
-                          {user.role}
-                        </p>
-                      </div>
-
-                      {user.role === "ADMIN" && (
-                        <Button
-                          asChild
-                          variant="outline"
-                          size="lg"
-                          className="w-full rounded-lg"
+                  {fullNavItems.map((item) =>
+                    item.submenu ? (
+                      <div key={item.label}>
+                        <button
+                          onClick={() =>
+                            setMobileExpanded(
+                              mobileExpanded === item.label ? null : item.label
+                            )
+                          }
+                          className="flex w-full items-center gap-3 rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-md transition hover:bg-white/20"
                         >
-                          <Link
-                            href="/dashboard/admin/movies"
-                            onClick={() => setMobileOpen(false)}
+                          {item.icon && (
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                              <item.icon className="h-4 w-4 text-primary" />
+                            </span>
+                          )}
+                          <span className="flex-1 text-left">{item.label}</span>
+                          <motion.span
+                            animate={{
+                              rotate: mobileExpanded === item.label ? 180 : 0,
+                            }}
+                            transition={{ duration: 0.2 }}
+                            className="text-xs text-primary"
                           >
-                            Admin Panel
-                          </Link>
-                        </Button>
-                      )}
-
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="lg"
-                        className="w-full rounded-lg"
+                            ▾
+                          </motion.span>
+                        </button>
+                        <AnimatePresence>
+                          {mobileExpanded === item.label && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="ml-2 mt-2 grid gap-1.5">
+                                {item.submenu.map((sub) => {
+                                  const SubIcon = sub.icon;
+                                  return (
+                                    <Link
+                                      key={sub.label}
+                                      href={sub.href}
+                                      onClick={() => {
+                                        setMobileOpen(false);
+                                        setMobileExpanded(null);
+                                      }}
+                                      className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.06] px-4 py-3 text-sm uppercase tracking-[0.12em] text-zinc-300 transition hover:border-white/20 hover:bg-white/[0.12] hover:text-white"
+                                    >
+                                      {SubIcon && (
+                                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                                          <SubIcon className="h-4 w-4 text-primary" />
+                                        </span>
+                                      )}
+                                      <span>{sub.label}</span>
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    ) : (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-3 rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-md transition hover:bg-white/20"
                       >
-                        <Link
-                          href="/dashboard/user/profile"
-                          onClick={() => setMobileOpen(false)}
-                        >
-                          My Profile
-                        </Link>
-                      </Button>
-
-                      <Button
-                        onClick={() => {
-                          logout();
-                          setMobileOpen(false);
-                        }}
-                        variant="outline"
-                        size="lg"
-                        className="w-full rounded-lg text-red-400 border-red-400/20 hover:bg-red-400/10"
-                      >
-                        Sign Out
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="lg"
-                        className="w-full rounded-full py-4"
-                      >
-                        <Link href="/login">Sign In</Link>
-                      </Button>
-                      <Button
-                        asChild
-                        variant="netflix"
-                        size="lg"
-                        className="w-full rounded-full py-4"
-                      >
-                        <Link href="/register">Sign Up</Link>
-                      </Button>
-                    </>
+                        {item.icon && (
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                            <item.icon className="h-4 w-4 text-primary" />
+                          </span>
+                        )}
+                        {item.label}
+                      </Link>
+                    )
                   )}
                 </div>
+
+
+                {!isAuthenticated && (
+                  <div className="grid gap-3 pt-2 border-t border-white/10">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="lg"
+                      className="w-full rounded-full py-4"
+                    >
+                      <Link href="/login">Sign In</Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="netflix"
+                      size="lg"
+                      className="w-full rounded-full py-4"
+                    >
+                      <Link href="/register">Sign Up</Link>
+                    </Button>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}

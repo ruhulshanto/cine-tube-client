@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, type LucideIcon } from "lucide-react";
 import { useEffect } from "react";
 
 interface NavItem {
   label: string;
   href: string;
+  icon?: LucideIcon;
   submenu?: NavItem[];
 }
 
@@ -136,10 +137,22 @@ export function NavDrawer({ isOpen, onClose, items }: NavDrawerProps) {
                         onClick={onClose}
                         className="group relative block rounded-lg border border-white/20 bg-white/10 px-4 py-3.5 backdrop-blur-xl transition-all duration-200 hover:bg-white/20"
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold uppercase tracking-[0.08em] text-white">
-                            {item.label}
-                          </span>
+                        <div className="flex items-center gap-3">
+                          {item.icon && (
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10 transition-colors group-hover:bg-white/20">
+                              <item.icon className="h-4 w-4 text-primary" />
+                            </span>
+                          )}
+                          <div className="flex-1">
+                            <span className="font-semibold uppercase tracking-[0.08em] text-white">
+                              {item.label}
+                            </span>
+                            {item.submenu && (
+                              <p className="mt-0.5 text-[11px] text-zinc-500">
+                                {item.submenu.length} options
+                              </p>
+                            )}
+                          </div>
                           {item.submenu && (
                             <motion.span
                               className="text-xs font-bold text-[#e50914]"
@@ -151,13 +164,6 @@ export function NavDrawer({ isOpen, onClose, items }: NavDrawerProps) {
                             </motion.span>
                           )}
                         </div>
-
-                        {/* Submenu indicator (if exists) */}
-                        {item.submenu && (
-                          <p className="mt-1.5 text-xs text-zinc-400">
-                            {item.submenu.length} options
-                          </p>
-                        )}
 
                         {/* Hover indicator line */}
                         <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-[#e50914] to-[#ff4d4d] transition-all duration-300 group-hover:w-full rounded-full" />
@@ -184,8 +190,13 @@ export function NavDrawer({ isOpen, onClose, items }: NavDrawerProps) {
                             <Link
                               href={submenu.href}
                               onClick={onClose}
-                              className="group relative block rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm uppercase tracking-[0.06em] text-zinc-300 backdrop-blur-xl transition-all duration-200 hover:bg-white/20 hover:text-white hover:pl-5"
+                              className="group relative flex items-center gap-3 rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm uppercase tracking-[0.06em] text-zinc-300 backdrop-blur-xl transition-all duration-200 hover:bg-white/20 hover:text-white"
                             >
+                              {submenu.icon && (
+                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white/10">
+                                  <submenu.icon className="h-3.5 w-3.5 text-primary" />
+                                </span>
+                              )}
                               <span>{submenu.label}</span>
                               <div className="absolute left-0 top-0 hidden h-full w-0.5 rounded-full bg-[#e50914] group-hover:block" />
                             </Link>
