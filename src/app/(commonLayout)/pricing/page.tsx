@@ -9,9 +9,10 @@ import {
   Sparkles,
   Star,
   ArrowRight,
-  Shield,
+  ShieldCheck,
   Zap,
   Monitor,
+  RotateCcw,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -65,104 +66,152 @@ export default function PricingPage() {
   return (
     <main className="min-h-screen bg-[#0b0b0b] text-white overflow-x-hidden">
       {/* Hero */}
-      <section className="relative isolate overflow-hidden px-6 pb-6 pt-32 md:px-12 lg:px-20">
-        <div className="absolute -right-40 -top-40 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute -left-40 top-40 h-60 w-60 rounded-full bg-primary/5 blur-3xl" />
+      <section className="relative isolate flex min-h-[85vh] items-center justify-center overflow-hidden px-6 pt-32 pb-24 md:px-12 lg:px-20 lg:pt-32 lg:pb-32">
+        <div
+          className="absolute inset-0 -z-10 bg-cover bg-center transition-transform duration-[12s] scale-105 animate-[pulse_24s_infinite]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to top, #0b0b0b 5%, rgba(11,11,11,0.6) 40%, rgba(11,11,11,0.2)), url('https://res.cloudinary.com/dtph8gqgi/image/upload/v1778621304/pricing2_bl11ua.jpg')",
+          }}
+        />
+        {/* Vignette overlays */}
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(48, 48, 48, 0)_0%,rgba(11,11,11,0.9)_100%)]" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/10 via-transparent to-[#0b0b0b]" />
+        
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mx-auto max-w-4xl text-center"
-        >
-          <p className="mb-3 text-[10px] font-black uppercase tracking-[0.28em] text-primary">
-            Pricing
-          </p>
-          <h1 className="text-4xl font-black uppercase tracking-tighter md:text-6xl lg:text-7xl">
-            Choose the Access That Fits{" "}
-            <span className="text-primary">Your Nights</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-zinc-400">
-            Start free, upgrade for premium titles, and keep your watchlist moving. No strings attached.
-          </p>
-        </motion.div>
+        <div className="relative max-w-4xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <p className="mb-6 text-xs font-black uppercase tracking-[0.4em] text-primary">
+              Simple, Honest Pricing
+            </p>
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+            className="text-5xl font-normal leading-[1.1] tracking-wider md:text-7xl lg:text-8xl"
+          >
+            Choose the Access That Fits <br />
+            <span className="bg-gradient-to-r from-primary via-white to-primary bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(229,9,20,0.35)]">Your Nights</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mt-8 mx-auto max-w-2xl text-base leading-relaxed text-zinc-300 md:text-lg md:leading-8"
+          >
+            Start free, upgrade for premium titles, and keep your watchlist moving. 
+            No hidden fees, no strings attached. Just unlimited stories.
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="mt-12 flex flex-wrap items-center justify-center gap-5"
+          >
+            <Button asChild variant="netflix" size="lg" className="h-14 rounded-full px-12 text-base font-black uppercase tracking-widest shadow-[0_0_30px_rgba(229,9,20,0.3)] hover:shadow-[0_0_50px_rgba(229,9,20,0.5)]">
+              <Link href="#plans">Compare plans</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="h-14 rounded-full border-white/20 bg-white/5 px-10 text-base font-bold backdrop-blur-md hover:bg-white/10 hover:border-white/40">
+              <Link href="/register">Get started free</Link>
+            </Button>
+          </motion.div>
+        </div>
+
+        {/* Center bottom pulse decoration */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
+           <div className="h-10 w-[1px] bg-gradient-to-b from-primary to-transparent" />
+        </div>
       </section>
 
       {/* Plans */}
-      <section className="container mx-auto grid gap-5 px-6 pb-16 md:grid-cols-3 md:px-12 lg:px-20">
-        {plans.map((plan, i) => {
-          const Icon = plan.icon;
-          return (
-            <motion.article
-              key={plan.name}
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: i * 0.12 }}
-              whileHover={{ y: -6 }}
-              className={`group relative flex flex-col rounded-2xl border p-8 backdrop-blur-md transition-all duration-300 hover:shadow-xl ${
-                plan.featured
-                  ? "border-primary/40 bg-white/[0.08] hover:border-primary/60 hover:shadow-primary/10"
-                  : "border-white/10 bg-white/[0.04] hover:border-white/20 hover:bg-white/[0.06]"
-              }`}
-            >
-              {/* Badge */}
-              {plan.featured && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1 text-[10px] font-black uppercase tracking-[0.25em] text-white shadow-lg">
-                    <Sparkles className="h-3 w-3" /> Most popular
-                  </span>
-                </div>
-              )}
-              {plan.badge && !plan.featured && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-1 text-[10px] font-black uppercase tracking-[0.25em] text-zinc-300">
-                    {plan.badge}
-                  </span>
-                </div>
-              )}
+      <section id="plans" className="relative container mx-auto px-6 py-32 md:px-12 lg:px-20">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px w-2/3 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
-              <Icon className={`mb-5 h-8 w-8 ${plan.featured ? "text-primary" : "text-primary/60"}`} />
-
-              <h2 className="text-2xl font-black">{plan.name}</h2>
-              <p className="mt-1 text-sm text-zinc-500">{plan.note}</p>
-
-              <div className="mt-6">
-                <span className="text-5xl font-black tracking-tighter">{plan.price}</span>
-                {plan.period && (
-                  <span className="ml-1 text-sm text-zinc-500">{plan.period}</span>
-                )}
-              </div>
-
-              <ul className="mt-6 grow space-y-3 text-sm">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-center gap-3 text-zinc-300">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                      <Check className="h-3 w-3 text-primary" />
-                    </span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              <Button
-                asChild
-                variant={plan.featured ? "netflix" : "outline"}
-                size="lg"
-                className={`mt-8 w-full rounded-xl font-black uppercase tracking-widest ${
-                  !plan.featured ? "border-white/20" : ""
+        <div className="grid gap-8 md:grid-cols-3">
+          {plans.map((plan, i) => {
+            const Icon = plan.icon;
+            return (
+              <motion.article
+                key={plan.name}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.4, delay: i * 0.1, ease: "easeOut" }}
+                whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                className={`group relative flex flex-col rounded-[2.5rem] border p-10 backdrop-blur-xl transition-all duration-200 ${
+                  plan.featured
+                    ? "border-primary/40 bg-white/[0.08] shadow-2xl shadow-primary/5"
+                    : "border-white/10 bg-white/[0.03] hover:border-white/30"
                 }`}
               >
-                <Link href={plan.name === "Free" ? "/register" : "/register"}>
-                  {plan.name === "Free" ? "Get started free" : "Subscribe"}
-                </Link>
-              </Button>
-            </motion.article>
-          );
-        })}
+                {plan.featured && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-1.5 text-[10px] font-black uppercase tracking-[0.25em] text-white shadow-xl shadow-primary/20">
+                      <Sparkles className="h-3 w-3" /> Most popular
+                    </span>
+                  </div>
+                )}
+                {plan.badge && !plan.featured && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/60 px-5 py-1.5 text-[10px] font-black uppercase tracking-[0.25em] text-zinc-300 backdrop-blur-md">
+                      {plan.badge}
+                    </span>
+                  </div>
+                )}
+
+                <div className={`mb-8 flex h-16 w-16 items-center justify-center rounded-2xl transition-all duration-200 ${plan.featured ? "bg-primary/20 scale-110 shadow-lg shadow-primary/10" : "bg-white/5"}`}>
+                  <Icon className={`h-8 w-8 ${plan.featured ? "text-primary" : "text-zinc-500"}`} />
+                </div>
+
+                <h2 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="text-3xl font-normal tracking-wide text-white">{plan.name}</h2>
+                <p className="mt-2 text-sm font-medium text-zinc-500">{plan.note}</p>
+
+                <div className="mt-8 flex items-baseline gap-1">
+                  <span style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="text-6xl font-normal tracking-tight text-white">{plan.price}</span>
+                  {plan.period && (
+                    <span className="text-sm font-black uppercase tracking-widest text-zinc-600">{plan.period}</span>
+                  )}
+                </div>
+
+                <div className="my-8 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+                <ul className="grow space-y-4 text-sm">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-center gap-4 text-zinc-400">
+                      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                        <Check className="h-3 w-3 text-primary" />
+                      </div>
+                      <span className="font-medium">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button
+                  asChild
+                  variant={plan.featured ? "netflix" : "outline"}
+                  size="lg"
+                  className={`mt-10 h-14 w-full rounded-2xl text-sm font-black uppercase tracking-widest transition-all duration-200 ${
+                    !plan.featured ? "border-white/20 hover:bg-white/10 hover:border-white/40" : "shadow-[0_0_20px_rgba(229,9,20,0.3)] hover:shadow-[0_0_35px_rgba(229,9,20,0.5)]"
+                  }`}
+                >
+                  <Link href="/register">
+                    {plan.name === "Free" ? "Get started" : "Join now"}
+                  </Link>
+                </Button>
+              </motion.article>
+            );
+          })}
+        </div>
       </section>
 
       {/* Feature Comparison Table */}
-      <section className="container mx-auto px-6 py-16 md:px-12 lg:px-20">
+      <section className="container mx-auto px-6 py-32 md:px-12 lg:px-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -170,8 +219,8 @@ export default function PricingPage() {
           transition={{ duration: 0.5 }}
           className="mb-10 text-center"
         >
-          <p className="mb-3 text-[10px] font-black uppercase tracking-[0.28em] text-primary">Comparison</p>
-          <h2 className="text-3xl font-black uppercase tracking-tighter md:text-4xl">See What&apos;s Included</h2>
+          <p className="mb-3 text-[15px] font-black uppercase tracking-[0.28em] text-primary">Comparison</p>
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="text-4xl font-normal tracking-wider md:text-6xl uppercase">See What&apos;s Included</h2>
         </motion.div>
 
         <div className="overflow-hidden rounded-2xl border border-white/10">
@@ -198,12 +247,12 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Perks */}
-      <section className="container mx-auto grid gap-6 px-6 pb-16 md:grid-cols-3 md:px-12 lg:px-20">
+      {/* Perks Grid */}
+      <section className="container mx-auto grid gap-8 px-6 pb-32 md:grid-cols-3 md:px-12 lg:px-20">
         {[
-          { icon: Shield, title: "Cancel anytime", text: "No penalties. No questions. Your account stays until the period ends." },
-          { icon: Zap, title: "Instant access", text: "Sign up and start streaming in under 60 seconds. No credit card required for Free." },
-          { icon: Monitor, title: "Watch anywhere", text: "Phone, tablet, laptop, TV — your library goes wherever you do." },
+          { icon: RotateCcw, title: "Cancel anytime", text: "No penalties. No long-term commitments. Your account stays active until the next billing date." },
+          { icon: Zap, title: "Instant access", text: "Sign up and start watching in seconds. Access premium movies immediately after payment." },
+          { icon: ShieldCheck, title: "Secure billing", text: "Phone, tablet, laptop, smart TV — CineTube works on all your favorite devices." },
         ].map((perk, i) => {
           const Icon = perk.icon;
           return (
@@ -213,14 +262,14 @@ export default function PricingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="flex items-start gap-4 rounded-xl border border-white/10 bg-white/[0.03] p-6"
+              className="flex flex-col items-start gap-6 rounded-3xl border border-white/10 bg-white/[0.04] p-10 backdrop-blur-md transition-all duration-200 hover:bg-white/[0.06] hover:border-white/20"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                <Icon className="h-5 w-5 text-primary" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                <Icon className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="font-bold text-white">{perk.title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-zinc-500">{perk.text}</p>
+                <h3 className="text-xl font-bold text-white">{perk.title}</h3>
+                <p className="mt-3 text-base leading-relaxed text-zinc-500">{perk.text}</p>
               </div>
             </motion.div>
           );
@@ -228,37 +277,45 @@ export default function PricingPage() {
       </section>
 
       {/* CTA Banner */}
-      <section className="container mx-auto px-6 pb-24 md:px-12 lg:px-20">
+      <section className="container mx-auto px-6 pb-32 md:px-12 lg:px-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.5 }}
-          className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-10 backdrop-blur-md md:p-16"
+          className="relative overflow-hidden rounded-[3rem] border border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.03] p-12 backdrop-blur-xl md:p-20 text-center"
         >
-          <div className="absolute -right-20 -top-20 h-60 w-60 rounded-full bg-primary/10 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-primary/5 blur-3xl" />
-          <div className="relative flex flex-col items-center justify-between gap-8 md:flex-row">
-            <div className="max-w-xl">
-              <Sparkles className="mb-4 h-6 w-6 text-primary" />
-              <h2 className="text-3xl font-black uppercase tracking-tighter md:text-4xl">
-                Not sure yet?
+          <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-primary/20 blur-[100px]" />
+          <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-primary/10 blur-[80px]" />
+          
+          <div className="relative flex flex-col items-center gap-10">
+            <div className="max-w-2xl">
+              <div className="mb-6 flex items-center justify-center gap-3 text-sm font-black uppercase tracking-[0.3em] text-primary">
+                Start your journey
+              </div>
+              <h2 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="text-5xl font-normal tracking-wide md:text-7xl">
+                Ready to find <span className="text-primary">your next</span> story?
               </h2>
-              <p className="mt-4 text-zinc-400">
-                Explore the catalog first and upgrade when premium calls. No commitment, no risk.
+              <p className="mt-6 text-base text-zinc-400 md:text-lg">
+                Join thousands of movie lovers. Start with a free plan and upgrade for the ultimate experience.
               </p>
             </div>
-            <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
-              <Button asChild variant="netflix" size="lg" className="rounded-2xl px-8 text-base font-black uppercase tracking-widest">
+            <div className="flex shrink-0 flex-col gap-4 sm:flex-row">
+              <Button asChild variant="netflix" size="lg" className="h-14 rounded-full px-12 text-base font-black uppercase tracking-widest shadow-[0_0_30px_rgba(229,9,20,0.3)]">
                 <Link href="/register">Get started free</Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="rounded-2xl border-white/20 px-8 text-base font-semibold">
-                <Link href="/movies">Browse catalog <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Button asChild variant="outline" size="lg" className="h-14 rounded-full border-white/20 bg-white/5 px-12 text-base font-bold backdrop-blur-md">
+                <Link href="/movies" className="flex items-center">Browse catalog <ArrowRight className="ml-3 h-5 w-5" /></Link>
               </Button>
             </div>
           </div>
         </motion.div>
       </section>
+
+      {/* Footer decorative */}
+      <div className="flex justify-center pb-12">
+        <Star className="h-5 w-5 text-primary/40 animate-pulse" />
+      </div>
     </main>
   );
 }

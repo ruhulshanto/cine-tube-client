@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -134,3 +135,5 @@
 .animate-gradient {
   animation: gradient 3s ease infinite;
 }
+
+  

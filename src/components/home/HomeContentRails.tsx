@@ -21,7 +21,11 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { Movie } from "@/types/movie.types";
+import type { Movie, Watchlist } from "@/types/movie.types";
+import { WatchlistButton } from "@/components/shared/WatchlistButton";
+import { useQuery } from "@tanstack/react-query";
+import { getWatchlist } from "@/services/interaction.services";
+import { useAuth } from "@/hooks/useAuth";
 
 type HomeContentRailsProps = {
   trendingMovies: Movie[];
@@ -98,22 +102,14 @@ export function HomeContentRails({
     trendingMovies,
   ).slice(0, 10);
   const freshDrops = uniqueMovies(newMovies, trendingMovies).slice(0, 12);
-  const continueWatching = uniqueMovies(
-    trendingMovies,
-    featuredMovies,
-    topRatedMovies,
-  ).slice(0, 3);
-  const hasContinueWatching = continueWatching.length > 0;
+
 
   return (
     <section className="relative -mt-4 space-y-10 overflow-hidden py-0 md:-mt-6 md:space-y-14">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-[#0b0b0b] via-[#0b0b0b]/86 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 top-72 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-      <QuickPicksRail
-        movies={continueWatching}
-        isLoading={trendingLoading || featuredLoading}
-      />
+
 
       <RankedTrendingRail movies={trendingMovies} isLoading={trendingLoading} />
 
@@ -144,82 +140,7 @@ export function HomeContentRails({
   );
 }
 
-function QuickPicksRail({
-  movies,
-  isLoading,
-}: {
-  movies: Movie[];
-  isLoading?: boolean;
-}) {
-  if (isLoading) {
-    return (
-      <section className="container mx-auto px-6 md:px-12 lg:px-20">
-        <Skeleton className="h-44 rounded-[1.75rem] bg-white/5" />
-      </section>
-    );
-  }
 
-  return (
-    <section className="container mx-auto px-6 md:px-12 lg:px-20">
-      <div className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.02] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] md:p-5">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(229,9,20,0.08),transparent_40%),linear-gradient(90deg,rgba(255,255,255,0.02),transparent_60%)]" />
-        <div className="relative grid gap-5 lg:grid-cols-[minmax(260px,0.42fr)_minmax(0,1fr)] lg:items-center">
-          <div>
-            <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-primary">
-              <Clock3 className="h-3.5 w-3.5" />
-              Quick picks
-            </p>
-            <h2 className="mt-2 text-2xl font-black leading-tight tracking-tighter text-white md:text-3xl">
-              Start with a few strong titles.
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-zinc-500">
-              Simple suggestions for the first step, without overpromising
-              behavior.
-            </p>
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-3">
-            {movies.slice(0, 3).map((movie) => (
-              <QuickPickCard key={movie.id} movie={movie} />
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function QuickPickCard({ movie }: { movie: Movie }) {
-  return (
-    <Link
-      href={`/movies/${movie.id}`}
-      className={cn(
-        "group relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/35 outline-none transition duration-300 hover:-translate-y-[0.5px] hover:border-primary/35 hover:bg-white/[0.055] focus-visible:ring-2 focus-visible:ring-primary/35",
-        interactiveCardClass,
-      )}
-    >
-      <div className="relative aspect-video overflow-hidden">
-        <img
-          src={backdrop(movie)}
-          alt={movie.title}
-          className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-103 group-hover:opacity-100"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-        <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/45 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-md">
-          Start here
-        </div>
-      </div>
-      <div className="space-y-2 p-3">
-        <p className="line-clamp-1 text-sm font-black text-white">
-          {movie.title}
-        </p>
-        <p className="text-xs leading-5 text-zinc-400">
-          {movie.releaseYear} • {accessLabel(movie)}
-        </p>
-      </div>
-    </Link>
-  );
-}
 
 function RailHeader({
   eyebrow,
@@ -304,19 +225,32 @@ function RankedTrendingRail({
   isLoading?: boolean;
 }) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const { user } = useAuth();
+
+  const { data: watchlistResponse } = useQuery({
+    queryKey: ["watchlist"],
+    queryFn: getWatchlist,
+    enabled: !!user,
+  });
+
+  // Match MovieHero: httpClient wraps response in { data: [] }
+  const watchlist = watchlistResponse?.data || [];
 
   return (
-    <section className="space-y-7">
+    <section className="space-y-10 py-32 relative">
+      {/* Cinematic Header Glow */}
+      <div className="absolute top-0 left-0 h-[400px] w-[600px] -z-10 bg-[radial-gradient(circle_at_20%_30%,rgba(229,9,20,0.12),transparent_70%)] blur-3xl opacity-60" />
+      
       <div className="container mx-auto flex items-end justify-between gap-5 px-6 md:px-12 lg:px-20">
-        <div className="max-w-3xl space-y-2">
-          <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-primary">
-            <Flame className="h-3.5 w-3.5 fill-current" />
+        <div className="max-w-3xl space-y-3">
+          <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-primary">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_12px_#e50914]" />
             Trending now
           </p>
-          <h2 className="text-4xl font-black leading-none tracking-tighter text-white md:text-5xl">
-            Top 10 now
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="text-5xl font-normal leading-none tracking-wider text-white md:text-7xl uppercase">
+            Top 10 <span className="text-primary">Now</span>
           </h2>
-          <p className="max-w-2xl text-sm leading-6 text-zinc-500">
+          <p className="max-w-2xl text-base leading-7 text-zinc-500">
             The most popular titles on CineTube, ranked for easy browsing.
           </p>
         </div>
@@ -326,7 +260,7 @@ function RankedTrendingRail({
       <div className="relative">
         <div
           ref={scrollerRef}
-          className="flex snap-x gap-5 overflow-x-auto px-6 pb-7 pt-2 scrollbar-hide md:px-12 lg:px-20"
+          className="flex snap-x gap-8 overflow-x-auto px-6 pb-12 pt-2 scrollbar-hide md:px-12 lg:px-20"
         >
           {isLoading
             ? Array.from({ length: 6 }).map((_, index) => (
@@ -334,60 +268,154 @@ function RankedTrendingRail({
               ))
             : movies
                 .slice(0, 10)
-                .map((movie, index) => (
-                  <RankedMovieCard
-                    key={movie.id}
-                    movie={movie}
-                    rank={index + 1}
-                  />
-                ))}
+                .map((movie, index) => {
+                  // Match MovieHero: item.movie?.id === movie.id
+                  const isInWatchlist = watchlist.some((item: any) => item.movie?.id === movie.id);
+
+                  return (
+                    <RankedMovieCard
+                      key={movie.id}
+                      movie={movie}
+                      rank={index + 1}
+                      isInWatchlist={isInWatchlist}
+                    />
+                  );
+                })}
           <div className="min-w-8" />
         </div>
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#0b0b0b] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#0b0b0b] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#0b0b0b] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#0b0b0b] to-transparent" />
       </div>
     </section>
   );
 }
 
-function RankedMovieCard({ movie, rank }: { movie: Movie; rank: number }) {
+function RankedMovieCard({ 
+  movie, 
+  rank, 
+  isInWatchlist 
+}: { 
+  movie: Movie; 
+  rank: number;
+  isInWatchlist?: boolean;
+}) {
+  const isMedal = rank <= 3;
+
   return (
-    <Link
-      href={`/movies/${movie.id}`}
-      className={cn(
-        "group relative flex min-w-[260px] snap-start items-end rounded-[1.6rem] md:min-w-[330px]",
-        interactiveCardClass,
-      )}
-    >
-      <span className="absolute -left-2 bottom-0 z-0 select-none text-[8.5rem] font-black leading-none tracking-tighter text-white/[0.055] transition group-hover:text-primary/15 md:text-[11rem]">
+    <div className="group relative flex min-w-[340px] snap-start flex-col gap-0 md:min-w-[380px]">
+      {/* Large Background Rank */}
+      <span
+        className={cn(
+          "pointer-events-none absolute -top-6 left-2 z-0 select-none font-black leading-none tracking-tighter transition-all duration-700",
+          "text-[7rem] md:text-[9rem]",
+          isMedal
+            ? "text-primary/25 group-hover:text-primary/40"
+            : "text-white/[0.06] group-hover:text-white/10"
+        )}
+      >
         {rank}
       </span>
-      <motion.div
-        whileHover={{ y: -4 }}
-        transition={{ type: "spring", stiffness: 300, damping: 32 }}
-        className="relative z-10 ml-12 aspect-[2/3] w-[210px] overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.035] shadow-2xl shadow-black/40 transition group-focus-visible:border-primary/50 md:w-[245px]"
-      >
-        <img
-          src={poster(movie)}
-          alt={movie.title}
-          className="absolute inset-0 h-full w-full object-cover opacity-90 transition duration-700 group-hover:scale-103 group-hover:opacity-100"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent" />
-        <div className="absolute left-4 top-4 rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-md">
-          #{rank}
-        </div>
-        <BehaviorBadge
-          label={rank <= 3 ? "Editor pick" : behaviorSignal(rank)}
-        />
-        <div className="absolute bottom-0 left-0 right-0 space-y-2 p-4">
-          <p className="line-clamp-2 text-xl font-black leading-none tracking-tight text-white">
-            {movie.title}
-          </p>
-          <MovieMeta movie={movie} />
-        </div>
-        <HoverAction />
-      </motion.div>
-    </Link>
+
+      {/* Poster Card */}
+      <Link href={`/movies/${movie.id}`} className={cn("relative z-10 block", interactiveCardClass)}>
+        <motion.div
+          whileHover={{ y: -5 }}
+          transition={{ type: "spring", stiffness: 300, damping: 28 }}
+          className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.02] ring-1 ring-white/5 shadow-[0_24px_50px_-12px_rgba(0,0,0,0.8)] transition-all duration-500 group-hover:border-white/20 group-hover:shadow-[0_32px_60px_-12px_rgba(229,9,20,0.15)]"
+        >
+          {/* Poster Image */}
+          <div className="relative aspect-[16/10] overflow-hidden">
+            <img
+              src={backdrop(movie) || poster(movie)}
+              alt={movie.title}
+              className="h-full w-full object-cover opacity-90 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100"
+            />
+            {/* Cinematic Overlays */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent" />
+
+            {/* Top Row Badges */}
+            <div className="absolute left-4 top-4 flex items-center gap-2">
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-widest backdrop-blur-md",
+                  isMedal
+                    ? "border border-primary/40 bg-primary/20 text-primary shadow-[0_0_12px_rgba(229,9,20,0.3)]"
+                    : "border border-white/10 bg-black/50 text-white/70"
+                )}
+              >
+                {isMedal && <span className="text-[10px]">🏆</span>}
+                #{rank}
+              </span>
+              {isMedal && (
+                <span className="inline-flex items-center rounded-full border border-amber-400/30 bg-amber-400/15 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-amber-400 backdrop-blur-md">
+                  Top Pick
+                </span>
+              )}
+            </div>
+
+            {/* Watchlist badge — always visible if saved */}
+            {isInWatchlist && (
+              <div className="absolute right-4 top-4 z-20 flex items-center gap-1 rounded-full border border-primary/40 bg-primary/20 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-primary backdrop-blur-md shadow-[0_0_14px_rgba(229,9,20,0.35)]">
+                <CheckCircle2 className="h-3 w-3" />
+                Saved
+              </div>
+            )}
+
+            {/* Hover Play Overlay */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-lg shadow-2xl">
+                <Play className="h-6 w-6 fill-white text-white ml-1" />
+              </div>
+            </div>
+          </div>
+
+          {/* Info Strip */}
+          <div className="space-y-3 p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="line-clamp-1 text-lg font-black leading-tight tracking-tight text-white">
+                  {movie.title}
+                </p>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold text-zinc-500">
+                  <span>{movie.releaseYear}</span>
+                  <span className="h-1 w-1 rounded-full bg-zinc-700" />
+                  <span className="inline-flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    {movie.averageRating?.toFixed(1) ?? "New"}
+                  </span>
+                  {movie.duration && (
+                    <>
+                      <span className="h-1 w-1 rounded-full bg-zinc-700" />
+                      <span>{movie.duration}m</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <WatchlistButton
+                movieId={movie.id}
+                variant="minimal"
+                className="shrink-0"
+              />
+            </div>
+
+            {/* Genre Pills */}
+            {movie.genres?.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {movie.genres.slice(0, 3).map((g) => (
+                  <span
+                    key={g}
+                    className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-zinc-500"
+                  >
+                    {g}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </motion.div>
+      </Link>
+    </div>
   );
 }
 
@@ -411,127 +439,82 @@ function EditorialSpotlight({
   if (!movie) return null;
 
   return (
-    <section className="container mx-auto px-4 md:px-12 lg:px-20">
-      <Link
-        href={`/movies/${movie.id}`}
-        className="group/spotlight block rounded-[2rem] outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    <section className="container mx-auto px-4 py-5 md:px-12 lg:px-20">
+      <div
+        className="group/spotlight relative block rounded-[2.5rem] outline-none"
       >
-        <div className="relative min-h-[620px] overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.025] shadow-[0_42px_120px_-60px_rgba(0,0,0,0.95)] md:min-h-[680px]">
+        <div className="relative min-h-[500px] overflow-hidden rounded-[2.5rem] border border-white/10 bg-black shadow-[0_42px_120px_-60px_rgba(0,0,0,0.95)] md:min-h-[580px]">
+          {/* Background Image */}
           <img
             src={backdrop(movie)}
             alt={movie.title}
-            className="absolute inset-0 h-full w-full object-cover opacity-50 transition duration-[1200ms] group-hover/spotlight:scale-[1.025] group-hover/spotlight:opacity-65 group-focus-visible/spotlight:scale-[1.025] group-focus-visible/spotlight:opacity-65"
+            className="absolute inset-0 h-full w-full object-cover opacity-60 transition duration-[1200ms] group-hover/spotlight:scale-[1.03] group-hover/spotlight:opacity-70"
           />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_26%_18%,rgba(229,9,20,0.22),transparent_30%),linear-gradient(90deg,rgba(0,0,0,0.96),rgba(0,0,0,0.7)_48%,rgba(0,0,0,0.92)),linear-gradient(0deg,rgba(0,0,0,0.95),transparent_42%)] transition duration-700 group-hover/spotlight:opacity-95" />
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-          <div className="absolute right-6 top-6 hidden rounded-full border border-white/10 bg-black/35 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-zinc-300 backdrop-blur-md md:inline-flex">
-            Trailer preview ready
-          </div>
+          
+          {/* Cinematic Overlays */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,rgba(229,9,20,0.18),transparent_40%),linear-gradient(90deg,rgba(0,0,0,0.98),rgba(0,0,0,0.7)_50%,rgba(0,0,0,0.4)),linear-gradient(0deg,rgba(0,0,0,0.9),transparent_60%)]" />
+          
+          {/* Top Border Light */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-          <div className="relative grid min-h-[620px] gap-8 p-5 md:min-h-[680px] md:p-8 lg:grid-cols-[minmax(0,1.12fr)_minmax(330px,0.88fr)] lg:p-10">
-            <div className="flex flex-col justify-end pb-2">
-              <p className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-primary/25 bg-primary/12 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-white">
-                <Sparkles className="h-3.5 w-3.5 text-primary" />
-                Editor&apos;s Spotlight
+          {/* Main Content */}
+          <div className="relative flex h-full min-h-[500px] flex-col justify-center p-8 md:min-h-[580px] md:p-16 lg:p-20">
+            <div className="max-w-2xl space-y-6">
+              <p className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1 text-[10px] font-black uppercase tracking-[0.3em] text-primary shadow-[0_0_15px_rgba(229,9,20,0.2)]">  
+                Featured Selection
               </p>
 
-              <div className="mb-4 flex flex-wrap items-center gap-2">
-                <SpotlightPill>{accessLabel(movie)}</SpotlightPill>
-                <SpotlightPill>{movie.releaseYear}</SpotlightPill>
-                {movie.duration ? (
-                  <SpotlightPill>{movie.duration} min</SpotlightPill>
-                ) : null}
-                <SpotlightPill>
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  {movie.averageRating?.toFixed(1) ?? "New"}
-                </SpotlightPill>
+              <div className="space-y-4">
+                <h2 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="text-6xl font-normal leading-none tracking-wider text-white md:text-8xl uppercase drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                  {movie.title}
+                </h2>
+                
+                <div className="flex flex-wrap items-center gap-3">
+                  <SpotlightPill>{accessLabel(movie)}</SpotlightPill>
+                  <SpotlightPill>{movie.releaseYear}</SpotlightPill>
+                  <SpotlightPill>
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    {movie.averageRating?.toFixed(1) ?? "New"}
+                  </SpotlightPill>
+                  {movie.duration ? (
+                    <SpotlightPill>{movie.duration} min</SpotlightPill>
+                  ) : null}
+                </div>
               </div>
 
-              <h2 className="max-w-4xl text-5xl font-black leading-[0.92] tracking-tighter text-white md:text-6xl">
-                {movie.title}
-              </h2>
-
-              <div className="mt-5 max-w-3xl border-l border-primary/50 pl-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-primary">
-                  Why we picked this
-                </p>
-                <p className="mt-2 text-sm leading-7 text-zinc-300 md:text-base">
+              <div className="border-l-2 border-primary/40 pl-6">
+                <p className="max-w-xl text-lg leading-relaxed text-zinc-300 md:text-xl">
                   {movie.synopsis ||
-                    "A confident centerpiece for the moment when browsing slows down and a title starts to feel worth committing to."}
+                    "A masterpiece of its genre, carefully selected for viewers who demand cinematic excellence and emotional depth."}
                 </p>
               </div>
 
-              <div className="mt-6 flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-4 pt-4">
                 <Link
                   href={`/movies/${movie.id}`}
                   onClick={(event) => event.stopPropagation()}
-                  className="inline-flex h-12 items-center gap-2 rounded-full bg-white px-6 text-sm font-black text-black shadow-[0_18px_50px_-22px_rgba(255,255,255,0.9)] outline-none transition hover:scale-[1.02] hover:bg-zinc-100 focus-visible:ring-2 focus-visible:ring-white/50"
+                  className="inline-flex h-14 items-center gap-3 rounded-full bg-primary px-10 text-base font-black uppercase tracking-widest text-white shadow-[0_15px_35px_-12px_rgba(229,9,20,0.5)] transition-all hover:scale-105 hover:bg-primary/90 active:scale-95"
                 >
-                  <Play className="h-4 w-4 fill-current" />
-                  Watch preview
+                  <Play className="h-5 w-5 fill-current" />
+                  Watch Now
                 </Link>
                 <Link
                   href="/movies"
                   onClick={(event) => event.stopPropagation()}
-                  className="inline-flex h-12 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 text-sm font-black text-white outline-none backdrop-blur-md transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary/35"
+                  className="inline-flex h-14 items-center gap-3 rounded-full border border-white/10 bg-white/5 px-8 text-base font-black uppercase tracking-widest text-white backdrop-blur-md transition-all hover:bg-white/10 active:scale-95"
                 >
-                  Explore all
-                  <ArrowRight className="h-4 w-4" />
+                  Explore More
                 </Link>
-              </div>
-
-              <p className="mt-4 flex items-center gap-2 text-xs font-semibold text-zinc-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_12px_rgba(229,9,20,0.6)]" />
-                Hover or focus to brighten the preview stage.
-              </p>
-            </div>
-
-            <div className="grid content-end gap-4">
-              <div className="rounded-[1.5rem] border border-white/10 bg-black/32 p-4 backdrop-blur-md">
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-zinc-500">
-                  Curator note
-                </p>
-                <p className="mt-2 text-sm leading-6 text-zinc-300">
-                  A focused spotlight that gives the homepage a calm, confident
-                  moment before the rest of the lineup.
-                </p>
-              </div>
-
-              <div className="grid gap-3">
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-zinc-500">
-                  Popular with viewers like you
-                </p>
-                {supportMovies.slice(0, 3).map((item, index) => (
-                  <Link
-                    key={item.id}
-                    href={`/movies/${item.id}`}
-                    onClick={(event) => event.stopPropagation()}
-                    className={cn(
-                      "group/support flex items-center gap-3 rounded-2xl border border-white/10 bg-black/35 p-2 backdrop-blur-md hover:border-primary/35 hover:bg-white/[0.07]",
-                      interactiveCardClass,
-                    )}
-                  >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 text-xs font-black text-zinc-500 group-hover/support:text-primary">
-                      {index + 1}
-                    </span>
-                    <img
-                      src={poster(item)}
-                      alt={item.title}
-                      className="h-16 w-12 rounded-xl object-cover"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-black text-white">
-                        {item.title}
-                      </p>
-                      <MovieMeta movie={item} compact />
-                    </div>
-                  </Link>
-                ))}
               </div>
             </div>
           </div>
+
+          {/* Watchlist Integration for the spotlight movie */}
+          <div className="absolute bottom-10 right-10 z-30">
+            <WatchlistButton movieId={movie.id} className="h-14 w-14 border-white/20 bg-black/40" />
+          </div>
         </div>
-      </Link>
+      </div>
     </section>
   );
 }
@@ -606,84 +589,110 @@ function CompactSignalCard({ movie, index }: { movie: Movie; index: number }) {
   const score = Math.min(98, 78 + ((index * 7) % 20));
 
   return (
-    <Link
-      href={`/movies/${movie.id}`}
-      className={cn(
-        "group relative flex min-w-[300px] snap-start gap-4 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-3 transition duration-300 hover:-translate-y-[0.5px] hover:border-primary/35 hover:bg-white/[0.055] md:min-w-[380px]",
-        interactiveCardClass,
-      )}
-    >
-      <div className="relative h-32 w-24 shrink-0 overflow-hidden rounded-[1.15rem] bg-white/5">
-        <img
-          src={poster(movie)}
-          alt={movie.title}
-          className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-103 group-hover:opacity-100"
-        />
-      </div>
-      <BehaviorBadge
-        label={index < 3 ? "Editor pick" : behaviorSignal(index)}
-        compact
-      />
-      <div className="flex min-w-0 flex-1 flex-col justify-between py-1">
-        <div>
-          <p className="line-clamp-2 text-lg font-black leading-tight text-white">
-            {movie.title}
-          </p>
-          <MovieMeta movie={movie} />
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-zinc-500">
-            <span>Strong ratings</span>
-            <span className="text-zinc-300">{score}%</span>
-          </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-primary to-amber-300"
-              style={{ width: `${score}%` }}
+    <div className="group relative min-w-[340px] snap-start md:min-w-[420px]">
+      <Link href={`/movies/${movie.id}`} className={cn("block", interactiveCardClass)}>
+        <motion.div
+          whileHover={{ y: -8, scale: 1.01 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-black/40 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.8)] ring-1 ring-white/5 transition-all duration-500 group-hover:border-primary/40 group-hover:shadow-[0_0_40px_rgba(229,9,20,0.15)]"
+        >
+          {/* Backdrop Image */}
+          <div className="relative aspect-video overflow-hidden">
+            <img
+              src={backdrop(movie)}
+              alt={movie.title}
+              className="h-full w-full object-cover opacity-85 transition duration-1000 group-hover:scale-105 group-hover:opacity-100"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0b] via-transparent to-transparent" />
+            
+            {/* Hover Play Overlay */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-[0_0_30px_rgba(229,9,20,0.6)]">
+                <Play className="h-6 w-6 fill-white text-white ml-1" />
+              </div>
+            </div>
+
+            {/* Score Badge */}
+            <div className="absolute left-4 top-4 rounded-full border border-primary/30 bg-primary/20 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary backdrop-blur-md">
+              {score}% Rating
+            </div>
           </div>
-        </div>
-      </div>
-      <HoverAction compact />
-    </Link>
+
+          {/* Info Strip */}
+          <div className="p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <h3 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="line-clamp-1 text-2xl font-normal tracking-wide text-white uppercase transition-colors group-hover:text-primary">
+                  {movie.title}
+                </h3>
+                <div className="flex items-center gap-3 text-xs font-bold text-zinc-500">
+                  <span>{movie.releaseYear}</span>
+                  <span className="h-1 w-1 rounded-full bg-zinc-700" />
+                  <span className="text-primary">{accessLabel(movie)}</span>
+                  <span className="h-1 w-1 rounded-full bg-zinc-700" />
+                  <span>{movie.genres?.[0]}</span>
+                </div>
+              </div>
+              <WatchlistButton movieId={movie.id} variant="minimal" className="h-10 w-10 border-white/10" />
+            </div>
+          </div>
+        </motion.div>
+      </Link>
+    </div>
   );
 }
 
 function PosterShelfCard({ movie, index }: { movie: Movie; index: number }) {
   return (
-    <Link
-      href={`/movies/${movie.id}`}
-      className={cn(
-        "group min-w-[190px] snap-start rounded-[1.6rem] md:min-w-[230px]",
-        interactiveCardClass,
-      )}
-    >
-      <motion.div
-        whileHover={{ y: -4 }}
-        transition={{ type: "spring", stiffness: 280, damping: 30 }}
-        className="relative aspect-[2/3] overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.035] shadow-xl shadow-black/30 transition group-focus-visible:border-primary/50"
-      >
-        <img
-          src={poster(movie)}
-          alt={movie.title}
-          className="absolute inset-0 h-full w-full object-cover opacity-90 transition duration-700 group-hover:scale-103 group-hover:opacity-100"
-        />
-        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black via-black/48 to-transparent" />
-        <div className="absolute left-3 top-3 rounded-full border border-white/10 bg-black/45 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-md">
-          {index < 3 ? "Fresh drop" : accessLabel(movie)}
-        </div>
-        <BehaviorBadge
-          label={index % 2 === 0 ? "New this week" : behaviorSignal(index)}
-        />
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <p className="line-clamp-2 text-lg font-black leading-tight text-white">
-            {movie.title}
-          </p>
-          <MovieMeta movie={movie} compact />
-        </div>
-        <HoverAction />
-      </motion.div>
-    </Link>
+    <div className="group relative min-w-[200px] snap-start md:min-w-[260px]">
+      <Link href={`/movies/${movie.id}`} className={cn("block", interactiveCardClass)}>
+        <motion.div
+          whileHover={{ y: -10, scale: 1.02 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="relative aspect-[2/3] overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/40 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.8)] ring-1 ring-white/5 transition-all duration-500 group-hover:border-primary/40 group-hover:shadow-[0_0_40px_rgba(229,9,20,0.2)]"
+        >
+          <img
+            src={poster(movie)}
+            alt={movie.title}
+            className="absolute inset-0 h-full w-full object-cover opacity-90 transition duration-700 group-hover:scale-110 group-hover:opacity-100"
+          />
+          
+          {/* Top Gradient for Badge */}
+          <div className="absolute inset-x-0 top-0 h-1/4 bg-gradient-to-b from-black/80 to-transparent" />
+          
+          {/* Glassmorphic Bottom Panel */}
+          <div className="absolute inset-x-0 bottom-0 p-5 pt-10 bg-gradient-to-t from-black via-black/90 to-transparent backdrop-blur-[2px]">
+            <h3 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="line-clamp-1 text-xl font-normal tracking-wide text-white uppercase transition-colors group-hover:text-primary">
+              {movie.title}
+            </h3>
+            <div className="mt-2 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-400">
+                <span>{movie.releaseYear}</span>
+                <span className="h-0.5 w-0.5 rounded-full bg-zinc-600" />
+                <span className="flex items-center gap-1">
+                  <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" />
+                  {movie.averageRating?.toFixed(1)}
+                </span>
+              </div>
+              <WatchlistButton movieId={movie.id} variant="minimal" className="h-8 w-8" />
+            </div>
+          </div>
+
+          {/* Hover Play Overlay */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl">
+              <Play className="h-5 w-5 fill-white text-white ml-0.5" />
+            </div>
+          </div>
+
+          <div className="absolute left-3 top-3">
+             <span className="rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white backdrop-blur-md">
+                {index < 3 ? "Fresh Drop" : accessLabel(movie)}
+             </span>
+          </div>
+        </motion.div>
+      </Link>
+    </div>
   );
 }
 
@@ -747,7 +756,7 @@ function shortNumber(value: number) {
   return value.toString();
 }
 
-function HoverAction({ compact = false }: { compact?: boolean }) {
+function HoverAction({ compact = false, movieId }: { compact?: boolean; movieId?: string }) {
   return (
     <div
       className={cn(
@@ -757,20 +766,24 @@ function HoverAction({ compact = false }: { compact?: boolean }) {
     >
       <span
         className={cn(
-          "inline-flex items-center justify-center rounded-full bg-white text-black shadow-xl",
+          "inline-flex items-center justify-center rounded-full bg-white text-black shadow-xl transition-transform hover:scale-110",
           compact ? "h-8 w-8" : "h-9 w-9",
         )}
       >
         <Play className="h-4 w-4 fill-current" />
       </span>
-      <span
-        className={cn(
-          "inline-flex items-center justify-center rounded-full border border-white/10 bg-black/45 text-white backdrop-blur-md",
-          compact ? "h-8 w-8" : "h-9 w-9",
-        )}
-      >
-        <Plus className="h-4 w-4" />
-      </span>
+      {movieId ? (
+        <WatchlistButton movieId={movieId} className={cn(compact ? "h-8 w-8" : "h-9 w-9")} />
+      ) : (
+        <span
+          className={cn(
+            "inline-flex items-center justify-center rounded-full border border-white/10 bg-black/45 text-white backdrop-blur-md transition-transform hover:scale-110",
+            compact ? "h-8 w-8" : "h-9 w-9",
+          )}
+        >
+          <Plus className="h-4 w-4" />
+        </span>
+      )}
     </div>
   );
 }

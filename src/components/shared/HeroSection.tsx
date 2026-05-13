@@ -60,8 +60,8 @@ export function HeroSection({ movie, children }: HeroSectionProps) {
             />
           )}
 
-          <div className="absolute inset-0 bg-linear-to-t from-black via-black/30 to-transparent" />
-<div className="absolute inset-0 bg-linear-to-b from-transparent via-black/20 to-black" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0b] via-[#0b0b0b]/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0b0b0b]/30 via-transparent to-transparent" />
           <motion.div
             initial={{ scale: 1 }}
             animate={{ scale: 1.02 }}

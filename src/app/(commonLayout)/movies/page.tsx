@@ -8,24 +8,111 @@ import { MovieCardSkeleton } from "@/components/movies/MovieCardSkeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Alert,
-  AlertAction,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
-import { Search, Popcorn, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, useEffect, useMemo, Suspense } from "react";
+
+import { Popcorn, ChevronDown, Trash2, LayoutGrid, Check } from "lucide-react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 import { GENRE_OPTIONS } from "@/lib/adminMovie.schemas";
-import { publicSelectClass } from "@/lib/publicFormStyles";
 import { PageSkeleton } from "@/components/shared/AppSkeletons";
-const PAGE_SIZE = 10;
-
+import { motion, AnimatePresence } from "framer-motion";
 import { MoviesPagination } from "@/components/movies/MoviesPagination";
+
+const PAGE_SIZE = 15;
+
+// Custom Premium Dropdown (Fixes native select design issues)
+function PremiumDropdown({ 
+  label, 
+  value, 
+  onChange, 
+  options, 
+  placeholder,
+  className
+}: { 
+  label: string, 
+  value: string, 
+  onChange: (v: string) => void, 
+  options: readonly string[] | readonly {label: string, value: string}[],
+  placeholder: string,
+  className?: string
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const formattedOptions = options.map(opt => 
+    typeof opt === 'string' ? { label: opt, value: opt } : opt
+  );
+
+  const selectedOption = formattedOptions.find(opt => opt.value === value);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className={cn("space-y-2.5", className)} ref={containerRef}>
+      <p className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 ml-1">{label}</p>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex h-14 w-full items-center justify-between rounded-[1.25rem] border border-white/10 bg-white/[0.02] px-6 text-sm font-medium text-white transition-all duration-300 hover:bg-white/[0.06] hover:border-white/20 focus:outline-none"
+        >
+          <span className={cn(!selectedOption && "text-zinc-500")}>
+            {selectedOption ? selectedOption.label : placeholder}
+          </span>
+          <ChevronDown className={cn("h-4 w-4 text-zinc-500 transition-transform duration-500", isOpen && "rotate-180 text-primary")} />
+        </button>
+
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute left-0 top-[calc(100%+12px)] z-[100] w-full overflow-hidden rounded-[1.5rem] border border-white/15 bg-[#0b0b0b] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-3xl"
+            >
+              <div className="max-h-[300px] overflow-y-auto custom-scrollbar p-1">
+                <button
+                  onClick={() => { onChange(""); setIsOpen(false); }}
+                  className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-zinc-500 transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  {placeholder}
+                </button>
+                <div className="my-1 h-px bg-white/5 mx-2" />
+                {formattedOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { onChange(opt.value); setIsOpen(false); }}
+                    className={cn(
+                      "group flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm transition-all duration-200",
+                      value === opt.value ? "bg-primary/20 text-primary" : "text-zinc-400 hover:bg-white/10 hover:text-white"
+                    )}
+                  >
+                    <span className="font-medium">{opt.label}</span>
+                    {value === opt.value && (
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                        <Check className="h-4 w-4" />
+                      </motion.div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
 
 function MoviesPageSkeleton() {
   return <PageSkeleton variant="browse" />;
@@ -59,7 +146,6 @@ function MoviesPageContent() {
     if (debouncedSearch !== qParam) {
       updateUrlFromBrowseState({ q: debouncedSearch, page: "1" });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
   useEffect(() => {
@@ -69,7 +155,6 @@ function MoviesPageContent() {
         page: "1",
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedReleaseYear]);
 
   useEffect(() => {
@@ -79,7 +164,6 @@ function MoviesPageContent() {
         page: "1",
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedStreamingPlatform]);
 
   const commitSearchToUrl = () => {
@@ -89,7 +173,6 @@ function MoviesPageContent() {
     else params.delete("q");
     params.set("page", "1");
     const qs = params.toString();
-    // Only update if we are exactly on the movies catalog page
     if (window.location.pathname === "/movies") {
       router.replace(`/movies${qs ? `?${qs}` : ""}`, { scroll: false });
     }
@@ -130,14 +213,8 @@ function MoviesPageContent() {
       else params.delete("streamingPlatform");
     }
 
-    if (next.sortBy !== undefined) {
-      params.set("sortBy", next.sortBy);
-    }
-
-    if (next.sortOrder !== undefined) {
-      params.set("sortOrder", next.sortOrder);
-    }
-
+    if (next.sortBy !== undefined) params.set("sortBy", next.sortBy);
+    if (next.sortOrder !== undefined) params.set("sortOrder", next.sortOrder);
     if (next.q !== undefined) {
       if (next.q) params.set("q", next.q);
       else params.delete("q");
@@ -147,7 +224,6 @@ function MoviesPageContent() {
     params.set("page", nextPage);
 
     const qs = params.toString();
-    // Only update if we are exactly on the movies catalog page
     if (window.location.pathname === "/movies") {
       router.replace(`/movies?${qs}`, { scroll: false });
     }
@@ -211,253 +287,206 @@ function MoviesPageContent() {
     if (totalPages > 0 && currentPage > totalPages) {
       handlePageChange(totalPages);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, totalPages]);
 
   return (
-    <div className="container mx-auto max-w-[1600px] px-6 py-12 md:px-12 lg:px-20 animate-in fade-in duration-700">
-      <div className="mb-12 flex flex-col items-end justify-between gap-8 border-b border-white/5 pb-8 md:flex-row">
-        <div className="space-y-4">
-          <h1 className="text-4xl font-black uppercase tracking-tighter text-white text-shadow-glow md:text-6xl">
-            Explore All{" "}
-            <span className="text-primary tracking-normal">Films</span>
-          </h1>
-          <p className="max-w-xl text-lg leading-relaxed text-zinc-400">
-            Discover your next favorite story. Browse the catalog page by page
-            or search by title, genre, or director.
-          </p>
-          {!showSkeleton && total > 0 && (
-            <p className="text-sm font-semibold uppercase tracking-widest text-zinc-500">
-              {total} {total === 1 ? "title" : "titles"} in catalog
-            </p>
-          )}
+    <div className="min-h-screen bg-[#0b0b0b] pt-24 pb-20">
+      <div className="container mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20">
+        
+        {/* Header Section */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 border-b border-white/5 pb-8">
+          <div>
+            <p className="mb-3 text-[10px] font-black uppercase tracking-[0.4em] text-primary">CineTube Library</p>
+            <h1 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="text-5xl md:text-7xl font-normal tracking-wide text-white uppercase leading-none">
+              All Movies &amp; Series
+            </h1>
+          </div>
+          
+          <div className="w-full md:w-[500px]">
+             <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-transparent rounded-[2rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                <SearchWithSuggestions
+                    initialValue={searchTerm}
+                    onChange={(q) => setSearchTerm(q)}
+                    onSearch={(q) => {
+                        setSearchTerm(q);
+                        commitSearchToUrl();
+                    }}
+                    placeholder="Search titles, genres, directors..."
+                    showDropdown={false}
+                />
+             </div>
+          </div>
         </div>
 
-        <div id="movies-page-search" className="w-full md:w-[450px]">
-          <SearchWithSuggestions
-            initialValue={searchTerm}
-            onChange={(q) => setSearchTerm(q)}
-            onSearch={(q) => {
-              setSearchTerm(q);
-              commitSearchToUrl();
-            }}
-            placeholder="Search titles, directors, genres..."
-            showDropdown={false}
-          />
-        </div>
-      </div>
-
-      {isError && (
-        <Alert className="mb-8 rounded-2xl border border-rose-500/25 bg-rose-500/10 text-rose-100">
-          <AlertTitle>Couldn’t load the catalog</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
-          <AlertAction>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="h-9 rounded-xl border-white/15 bg-black/20 text-white hover:bg-white/10"
-              onClick={() => refetch()}
-              disabled={isFetching}
-            >
-              Retry
-            </Button>
-          </AlertAction>
-        </Alert>
-      )}
-
-      {/* Filters + sorting */}
-      <div className="mb-8 grid gap-3 md:grid-cols-2 lg:grid-cols-5">
-        <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-            Genre
-          </p>
-          <select
-            value={genreParam}
-            onChange={(e) => {
-              const v = e.target.value;
-              updateUrlFromBrowseState({ genre: v, page: "1" });
-            }}
-            className={publicSelectClass}
-          >
-            <option value="" className="bg-zinc-950 text-white">
-              All genres
-            </option>
-            {GENRE_OPTIONS.map((g) => (
-              <option key={g} value={g} className="bg-zinc-950 text-white">
-                {g}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-            Min rating
-          </p>
-          <select
-            value={minRatingParam}
-            onChange={(e) => {
-              const v = e.target.value;
-              updateUrlFromBrowseState({ minRating: v, page: "1" });
-            }}
-            className={publicSelectClass}
-          >
-            <option value="" className="bg-zinc-950 text-white">
-              Any rating
-            </option>
-            <option value="7" className="bg-zinc-950 text-white">
-              7+
-            </option>
-            <option value="8" className="bg-zinc-950 text-white">
-              8+
-            </option>
-            <option value="9" className="bg-zinc-950 text-white">
-              9+
-            </option>
-            <option value="10" className="bg-zinc-950 text-white">
-              10
-            </option>
-          </select>
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-            Release year
-          </p>
-          <Input
-            type="number"
-            inputMode="numeric"
-            value={releaseYear}
-            onChange={(e) => setReleaseYear(e.target.value)}
-            onBlur={() => {
-              updateUrlFromBrowseState({ page: "1" });
-            }}
-            placeholder="e.g. 2021"
-            className="h-11 rounded-2xl border-white/5 bg-white/5 px-4 text-sm text-white focus-visible:bg-white/10 focus-visible:ring-primary/20"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-            Streaming platform
-          </p>
-          <Input
-            value={streamingPlatform}
-            onChange={(e) => setStreamingPlatform(e.target.value)}
-            onBlur={() => {
-              updateUrlFromBrowseState({ page: "1" });
-            }}
-            placeholder="e.g. netflix, prime, cloud…"
-            className="h-11 rounded-2xl border-white/5 bg-white/5 px-4 text-sm text-white focus-visible:bg-white/10 focus-visible:ring-primary/20"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-            Sort
-          </p>
-          <select
-            value={sortByParam}
-            onChange={(e) => {
-              updateUrlFromBrowseState({
-                sortBy: e.target.value,
-                sortOrder: "desc",
-                page: "1",
-              });
-            }}
-            className={publicSelectClass}
-          >
-            <option value="createdAt" className="bg-zinc-950 text-white">
-              Recent
-            </option>
-            <option value="highest-rated" className="bg-zinc-950 text-white">
-              Top rated
-            </option>
-            <option value="latest" className="bg-zinc-950 text-white">
-              Latest release
-            </option>
-            <option value="most-reviewed" className="bg-zinc-950 text-white">
-              Most reviewed
-            </option>
-            <option value="most-liked" className="bg-zinc-950 text-white">
-              Most liked
-            </option>
-          </select>
-        </div>
-
-        <div className="md:col-span-2 lg:col-span-5 pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="rounded-2xl border-white/10 bg-white/5 text-[10px] font-black uppercase tracking-widest text-zinc-300 hover:bg-white/10"
-            onClick={() => {
-              setSearchTerm("");
-              setReleaseYear("");
-              setStreamingPlatform("");
-              updateUrlFromBrowseState({
-                q: "",
-                genre: "",
-                minRating: "",
-                releaseYear: "",
-                streamingPlatform: "",
-                sortBy: "createdAt",
-                sortOrder: "desc",
-                page: "1",
-              });
-            }}
-          >
-            Clear filters
-          </Button>
-        </div>
-      </div>
-
-      {showSkeleton ? (
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-10 xl:grid-cols-5">
-          {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-            <MovieCardSkeleton key={`skeleton-${i}`} />
-          ))}
-        </div>
-      ) : movies.length > 0 ? (
-        <div className="relative">
-          {isFetching && isPlaceholderData && (
-            <div className="absolute inset-0 z-10 grid grid-cols-2 gap-8 bg-[#0b0b0b]/70 backdrop-blur-sm md:grid-cols-3 lg:grid-cols-4 lg:gap-10 xl:grid-cols-5">
-              {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-                <MovieCardSkeleton key={`transition-skeleton-${i}`} />
-              ))}
-              <Skeleton className="absolute bottom-0 left-0 right-0 h-24 rounded-none bg-gradient-to-t from-[#0b0b0b] to-transparent" />
-            </div>
-          )}
-          <div
-            className={cn(
-              "grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-10 xl:grid-cols-5 transition-all duration-300",
-              isFetching &&
-                isPlaceholderData &&
-                "pointer-events-none opacity-40 blur-sm scale-[0.99]",
+        {/* Filtering Section */}
+        <div className="relative z-50 mb-12 rounded-xl border border-white/10 bg-white/[0.02] px-6 py-6">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-400">Filters</h3>
+            {(genreParam || minRatingParam || releaseYearParam || streamingPlatformParam) && (
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setReleaseYear("");
+                  setStreamingPlatform("");
+                  updateUrlFromBrowseState({
+                    q: "", genre: "", minRating: "", releaseYear: "",
+                    streamingPlatform: "", sortBy: "createdAt", sortOrder: "desc", page: "1"
+                  });
+                }}
+                className="flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-zinc-500 hover:text-primary transition-colors duration-200"
+              >
+                <Trash2 className="h-4 w-4" />
+                Clear All
+              </button>
             )}
-          >
-            {movies.map((movie, index) => (
-              <MovieCard key={movie.id || `movie-${index}`} movie={movie} />
-            ))}
           </div>
 
-          <MoviesPagination
-            page={currentPage}
-            totalPages={totalPages}
-            total={total}
-            isFetching={isFetching}
-            onPageChange={handlePageChange}
-          />
+          <div className="grid gap-5 sm:grid-cols-3 lg:gap-6">
+            <PremiumDropdown
+              label="Genre"
+              value={genreParam}
+              onChange={(v) => updateUrlFromBrowseState({ genre: v, page: "1" })}
+              options={GENRE_OPTIONS}
+              placeholder="All Genres"
+              className="w-full"
+            />
+
+            <PremiumDropdown
+              label="Min Rating"
+              value={minRatingParam}
+              onChange={(v) => updateUrlFromBrowseState({ minRating: v, page: "1" })}
+              options={["7", "8", "9", "10"].map(r => ({ label: `${r}+`, value: r }))}
+              placeholder="Any Rating"
+              className="w-full"
+            />
+
+            <div className="w-full">
+              <label className="block text-sm font-medium mb-2 tracking-wider text-zinc-400 uppercase">
+                Year
+              </label>
+              <Input
+                type="number"
+                value={releaseYear}
+                onChange={(e) => setReleaseYear(e.target.value)}
+                onBlur={() => updateUrlFromBrowseState({ page: "1" })}
+                placeholder="e.g. 2024"
+                className="h-11 rounded-xl border border-white/10 bg-white/[0.03] px-4 text-sm text-white focus-visible:ring-primary/20"
+              />
+            </div>
+
+            <div className="w-full">
+              <label className="block text-sm font-medium mb-2 tracking-wider text-zinc-400 uppercase">
+                Platform
+              </label>
+              <Input
+                value={streamingPlatform}
+                onChange={(e) => setStreamingPlatform(e.target.value)}
+                onBlur={() => updateUrlFromBrowseState({ page: "1" })}
+                placeholder="Netflix, Prime…"
+                className="h-11 rounded-xl border border-white/10 bg-white/[0.03] px-4 text-sm text-white focus-visible:ring-primary/20"
+              />
+            </div>
+
+            <PremiumDropdown
+              label="Sort By"
+              value={sortByParam}
+              onChange={(v) => updateUrlFromBrowseState({ sortBy: v, sortOrder: "desc", page: "1" })}
+              options={[
+                { label: "Recently Added", value: "createdAt" },
+                { label: "Top Rated", value: "highest-rated" },
+                { label: "Latest Release", value: "latest" },
+              ]}
+              placeholder="Sort By"
+              className="w-full"
+            />
+          </div>
+
+          {!showSkeleton && total > 0 && (
+            <div className="mt-6 flex items-center gap-3 text-sm font-medium tracking-wider text-zinc-500">
+              <LayoutGrid className="h-4 w-4 text-primary" />
+              <span><span className="text-white">{total}</span> titles found</span>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-white/10 py-24 glass-morphism">
-          <EmptyState
-            icon={Popcorn}
-            title="No results for your search"
-            description="Try another search or clear the box to browse the full catalog."
-          />
+
+        {/* Movies Grid (15 per page) */}
+        <div className="relative z-10">
+            {showSkeleton ? (
+            <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                <MovieCardSkeleton key={`skeleton-${i}`} />
+                ))}
+            </div>
+            ) : movies.length > 0 ? (
+            <div className="relative">
+                {isFetching && isPlaceholderData && (
+                <div className="absolute inset-0 z-10 grid grid-cols-2 gap-8 bg-[#0b0b0b]/70 backdrop-blur-sm md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                    {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                    <MovieCardSkeleton key={`transition-skeleton-${i}`} />
+                    ))}
+                </div>
+                )}
+                
+                <div
+                className={cn(
+                    "grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 transition-all duration-500",
+                    isFetching && isPlaceholderData && "pointer-events-none opacity-40 blur-sm"
+                )}
+                >
+                {movies.map((movie, index) => (
+                    <motion.div
+                        key={movie.id || `movie-${index}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: Math.min((index % PAGE_SIZE) * 0.05, 0.5) }}
+                    >
+                        <MovieCard movie={movie} />
+                    </motion.div>
+                ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                <div className="mt-24 flex justify-center border-t border-white/10 pt-16">
+                    <MoviesPagination
+                    page={currentPage}
+                    totalPages={totalPages}
+                    total={total}
+                    isFetching={isFetching}
+                    onPageChange={handlePageChange}
+                    />
+                </div>
+                )}
+            </div>
+            ) : (
+            <div className="flex flex-col items-center justify-center rounded-[4rem] border border-dashed border-white/10 py-40 bg-white/[0.01]">
+                <EmptyState
+                icon={Popcorn}
+                title="No Titles Found"
+                description="We couldn't find any results for your current filter configuration."
+                />
+                {(genreParam || minRatingParam || releaseYearParam || streamingPlatformParam) && (
+                <Button 
+                    variant="outline" 
+                    className="mt-10 rounded-full border-white/20 px-12 h-14 font-black uppercase tracking-widest text-xs transition-all hover:bg-white/10"
+                    onClick={() => {
+                    setSearchTerm("");
+                    setReleaseYear("");
+                    setStreamingPlatform("");
+                    updateUrlFromBrowseState({
+                        q: "", genre: "", minRating: "", releaseYear: "",
+                        streamingPlatform: "", sortBy: "createdAt", sortOrder: "desc", page: "1"
+                    });
+                    }}
+                >
+                    Clear All Search Filters
+                </Button>
+                )}
+            </div>
+            )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

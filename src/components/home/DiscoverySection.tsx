@@ -22,6 +22,11 @@ import {
   Star,
   TrendingUp,
   X,
+  Zap,
+  Ghost,
+  Laugh,
+  Heart,
+  Gem
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -54,59 +59,77 @@ type MoodChip = {
   searchTerm?: string;
   genre?: string;
   accent?: "red" | "amber" | "emerald" | "sky";
+  icon?: any;
 };
 
 const ALL_GENRES_VALUE = "__ALL__";
 
+const genreImages: Record<string, string> = {
+  Action: "https://static0.moviewebimages.com/wordpress/wp-content/uploads/2022/07/Extraction-2020-Chris-Hemsworth.jpg?q=50&fit=crop&w=825&dpr=1.5",
+  Adventure: "https://images.unsplash.com/photo-1501555088652-021faa106b9b?q=80&w=800&auto=format&fit=crop",
+  Animation: "https://res.cloudinary.com/dtph8gqgi/image/upload/v1778009878/2GVAsO_fvcd3l.jpg",
+  Comedy: "https://images.unsplash.com/photo-1527224857830-43a7acc85260?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  Crime: "https://images.unsplash.com/photo-1605806616949-1e87b487fc2f?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  Documentary: "https://images.unsplash.com/photo-1551816230-ef5deaed4a26?q=80&w=800&auto=format&fit=crop",
+  Drama: "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=800&auto=format&fit=crop",
+  Fantasy: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop",
+  Horror: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=800&auto=format&fit=crop",
+  "K-Drama": "https://plus.unsplash.com/premium_photo-1723650939880-beafd49c1d63?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  Mystery: "https://images.unsplash.com/photo-1587245767337-17e4011e8c90?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  Romance: "https://images.unsplash.com/photo-1474552226712-ac0f0961a954?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "Sci-Fi": "https://wallpaperaccess.com/full/535090.jpg",
+  Thriller: "https://images.unsplash.com/photo-1633266841047-719b5f737149?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  Western: "https://images.unsplash.com/photo-1624125278758-c0572f6ebc55?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+};
+
 const MOOD_CHIPS: MoodChip[] = [
   {
-    id: "trending",
-    label: "Everyone's watching",
-    hint: "Tonight's pulse",
-    searchTerm: "trending",
-    accent: "red",
-  },
-  {
     id: "action",
-    label: "Make it explosive",
-    hint: "Big-screen rush",
+    label: "Action",
+    hint: "Make it explosive",
     genre: "Action",
-    accent: "amber",
+    accent: "red",
+    icon: Zap
   },
   {
     id: "thriller",
-    label: "Keep me tense",
-    hint: "Dark turns",
+    label: "Thriller",
+    hint: "Keep me tense",
     genre: "Thriller",
     accent: "red",
+    icon: Ghost
   },
   {
     id: "comedy",
-    label: "Something easy",
-    hint: "Light reset",
+    label: "Comedy",
+    hint: "Something easy",
     genre: "Comedy",
     accent: "sky",
+    icon: Laugh
   },
   {
     id: "romance",
-    label: "Hit the heart",
-    hint: "Emotional pull",
+    label: "Romance",
+    hint: "Hit the heart",
     genre: "Romance",
     accent: "emerald",
+    icon: Heart
   },
   {
-    id: "new",
-    label: "Fresh arrivals",
-    hint: "Just added",
-    searchTerm: "new",
+    id: "k-drama",
+    label: "K-Drama",
+    hint: "Emotional pull",
+    genre: "K-Drama",
+    accent: "emerald",
+    icon: Sparkles
+  },
+  {
+    id: "sci-fi",
+    label: "Sci-Fi",
+    hint: "Beyond reality",
+    genre: "Sci-Fi",
     accent: "sky",
-  },
-  {
-    id: "hidden",
-    label: "Surprise me",
-    hint: "Hidden gems",
-    searchTerm: "hidden gems",
-    accent: "amber",
+    icon: Flame
   },
 ];
 
@@ -171,6 +194,7 @@ export function DiscoverySection({
   );
   const debouncedSuggestionSearch = useDebounce(homeSearch, 250);
 
+  /* 
   useAutoBrowseToMovies({
     router,
     enabled: true,
@@ -179,6 +203,7 @@ export function DiscoverySection({
     releaseYear: debouncedHomeReleaseYear,
     streamingPlatform: debouncedHomeStreamingPlatform,
   });
+  */
 
   const suggestionQuery = useQuery<ApiResponse<Movie[]>>({
     queryKey: ["home-discovery-suggestions", debouncedSuggestionSearch],
@@ -271,53 +296,69 @@ export function DiscoverySection({
   }
 
   return (
-    <section className="container mx-auto px-4 md:px-12 lg:px-20">
-      <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b0b0b]/75 shadow-[0_32px_90px_-40px_rgba(0,0,0,0.88)] backdrop-blur-2xl md:rounded-[2.5rem]">
+    <section className="container mx-auto px-4 md:px-12 lg:px-20 relative">
+      {/* Premium Dark-to-Light Transition */}
+      <div className="absolute -top-32 left-0 right-0 h-32 bg-gradient-to-b from-transparent via-[#0b0b0b]/50 to-[#0b0b0b]" />
+      
+      {/* Enhanced Light-Back Line */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center w-full max-w-6xl">
+        <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-[2px] opacity-50" />
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-primary/50 to-transparent shadow-[0_0_35px_rgba(229,9,20,0.4)]" />
+      </div>
+
+      <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-[#0b0b0b]/75 shadow-[0_32px_90px_-40px_rgba(0,0,0,0.88)] backdrop-blur-2xl mt-12 p-8 md:p-12 lg:p-16">
         <DiscoveryBackground movies={previewMovies} />
 
-        <div className="relative z-10 grid gap-7 p-4 sm:p-6 lg:grid-cols-[minmax(0,1.42fr)_minmax(330px,0.58fr)] lg:p-8 xl:p-10">
-          <div className="space-y-5 md:space-y-6">
-            <DiscoveryHeader />
-            <SmartSearch
-              value={homeSearch}
-              onChange={setHomeSearch}
-              onSubmit={submitSearch}
-              isFocused={isSearchFocused}
-              onFocusChange={setIsSearchFocused}
-              suggestions={suggestions}
-              isLoading={suggestionQuery.isFetching}
-              hasSearched={debouncedSuggestionSearch.trim().length >= 2}
-              previewMovies={previewMovies}
-              onStarterPrompt={applyStarterPrompt}
-            />
-            <MoodChipRail
-              selectedMoodIds={selectedMoodIds}
-              onToggle={toggleMood}
-            />
-            <ActiveIntentBar
-              selectedMoods={selectedMoods}
-              genre={homeGenre}
-              releaseYear={homeReleaseYear}
-              platform={homeStreamingPlatform}
-              onClearMood={clearIntent}
-              onClearAll={() => clearIntent()}
-            />
-            <RefineFilters
-              isOpen={isRefineOpen}
-              onToggle={() => setIsRefineOpen((value) => !value)}
-              genre={homeGenre}
-              releaseYear={homeReleaseYear}
-              platform={homeStreamingPlatform}
-              onGenreChange={setHomeGenre}
-              onReleaseYearChange={setHomeReleaseYear}
-              onPlatformChange={setHomeStreamingPlatform}
-            />
-          </div>
+        <div className="relative z-10 space-y-12">
+          <DiscoveryHeader />
+          
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {GENRE_OPTIONS.map((genre, i) => {
+              const bgImage = genreImages[genre] || "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=800&auto=format&fit=crop";
+              
+              return (
+                <motion.div
+                  key={genre}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: i * 0.05 }}
+                >
+                  <Link
+                    href={`/movies?genre=${encodeURIComponent(genre)}&sortBy=createdAt&sortOrder=desc`}
+                    className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md transition-all duration-500 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10"
+                  >
+                    {/* Image Overlay */}
+                    <div 
+                      className="absolute inset-0 transition-transform duration-700 group-hover:scale-110"
+                      style={{
+                        backgroundImage: `linear-gradient(to top, rgba(11,11,11,1) 0%, rgba(11,11,11,0.6) 50%, rgba(11,11,11,0.2) 100%), url('${bgImage}')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                      }}
+                    />
+                    
+                    {/* Content */}
+                    <div className="relative p-6">
+                      <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md transition-colors group-hover:bg-primary/20">
+                        <Clapperboard className="h-4 w-4 text-primary" />
+                      </div>
+                      <h4 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="text-2xl font-normal tracking-wide text-white transition-transform duration-300 group-hover:translate-x-1">
+                        {genre}
+                      </h4>
+                      
+                      <div className="mt-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
+                        Explore <ArrowRight className="h-3 w-3" />
+                      </div>
+                    </div>
 
-          <LiveTrendingPanel
-            movies={previewMovies}
-            activeMoods={selectedMoods}
-          />
+                    {/* Hover Glow */}
+                    <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
@@ -351,19 +392,15 @@ function DiscoveryBackground({ movies }: { movies: Movie[] }) {
 
 function DiscoveryHeader() {
   return (
-    <div className="max-w-3xl space-y-3">
-      <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-primary">
-        <span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_20px_rgba(229,9,20,0.65)]" />
-        Cinematic discovery
-      </p>
-      <div className="space-y-2">
-        <h2 className="max-w-2xl text-3xl font-black leading-[0.98] tracking-tighter text-white md:text-4xl lg:text-5xl">
-          Start with the feeling, find the film.
+    <div className="max-w-3xl space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="h-[1px] w-8 bg-primary/50" />
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Cinematic Discovery</p>
+      </div>
+      <div className="space-y-4">
+        <h2 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="text-5xl font-normal leading-[0.9] tracking-wider text-white md:text-7xl uppercase">
+          Start with the <span className="text-primary">feeling</span>, <br /> find the film.
         </h2>
-        <p className="max-w-xl text-sm leading-6 text-zinc-400 md:text-base">
-          Search directly, follow the crowd, or pick a mood. CineTube keeps
-          precision filters close, but lets discovery feel human first.
-        </p>
       </div>
     </div>
   );
@@ -640,40 +677,75 @@ function MoodChipRail({
   onToggle: (chip: MoodChip) => void;
 }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <p className="text-[10px] font-black uppercase tracking-[0.24em] text-zinc-500">
-          Start with a feeling
-        </p>
-        <span className="hidden text-[11px] font-semibold text-zinc-600 sm:inline">
-          Mix moods and signals
+        <h3 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="text-3xl font-normal tracking-wider text-white uppercase">
+          Select Your <span className="text-primary">Mood</span>
+        </h3>
+        <span className="hidden text-[11px] font-black uppercase tracking-[0.3em] text-zinc-600 sm:inline">
+          Tonight&apos;s Pulse
         </span>
       </div>
-      <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide sm:mx-0 sm:px-0">
-        {MOOD_CHIPS.map((chip) => {
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        {MOOD_CHIPS.map((chip, i) => {
           const isActive = selectedMoodIds.includes(chip.id);
+          const MoodIcon = chip.icon || Sparkles;
+          const bgImage = genreImages[chip.label] || genreImages[chip.genre || ""] || "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=800&auto=format&fit=crop";
+
           return (
-            <button
+            <motion.button
               key={chip.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.05 }}
               type="button"
-              data-active={isActive}
               onClick={() => onToggle(chip)}
               className={cn(
-                "group relative min-w-[10rem] snap-start overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-3 text-left text-zinc-300 transition-colors duration-300 hover:border-white/20 hover:bg-white/[0.07] hover:text-white",
-                accentClasses[chip.accent ?? "red"],
+                "group relative flex aspect-video flex-col justify-end overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-all duration-300 hover:border-primary/40",
+                isActive ? "border-primary/60 ring-1 ring-primary/40" : ""
               )}
             >
-              <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition group-hover:opacity-100" />
-              <span className="relative flex items-center gap-2 text-sm font-black">
-                {isActive ? (
-                  <Sparkles className="h-3.5 w-3.5 text-primary" />
-                ) : null}
-                {chip.label}
-              </span>
-              <span className="relative mt-1 block text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600 group-data-[active=true]:text-zinc-300">
-                {chip.hint}
-              </span>
-            </button>
+              {/* Image Overlay */}
+              <div 
+                className="absolute inset-0 transition-transform duration-700 group-hover:scale-110"
+                style={{
+                  backgroundImage: `linear-gradient(to top, rgba(11,11,11,0.95) 0%, rgba(11,11,11,0.5) 60%, rgba(11,11,11,0.15) 100%), url('${bgImage}')`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              />
+              
+              {/* Content */}
+              <div className="relative p-5 text-left">
+                <div className={cn(
+                  "mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md transition-colors",
+                  isActive ? "bg-primary text-white" : "group-hover:bg-primary/20 text-primary"
+                )}>
+                  <MoodIcon className="h-5 w-5" />
+                </div>
+                <h4 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="text-2xl font-normal tracking-wide text-white transition-transform duration-300 group-hover:translate-x-1">
+                  {chip.label}
+                </h4>
+                <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                  {chip.hint}
+                </p>
+                
+                <div className={cn(
+                  "mt-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary transition-all duration-300",
+                  isActive ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+                )}>
+                  {isActive ? "Selected" : "Match Result"} <ArrowRight className="h-3 w-3" />
+                </div>
+              </div>
+
+              {/* Hover Glow */}
+              <div className={cn(
+                "absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent transition-opacity",
+                isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              )} />
+            </motion.button>
           );
         })}
       </div>
@@ -860,20 +932,16 @@ function LiveTrendingPanel({
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-primary">
-              <Flame className="h-3.5 w-3.5 fill-current" />
-              Live pulse
+              <Sparkles className="h-3.5 w-3.5 fill-current" />
+              Discovery engine
             </p>
             <h3 className="mt-2 text-2xl font-black leading-none tracking-tighter text-white">
-              {activeMoods.length ? "Mood-matched" : "Trending now"}
+              {activeMoods.length ? `${activeMoods[0].label}` : "Tuned for You"}
             </h3>
           </div>
-          <motion.div
-            animate={{ opacity: [0.75, 1, 0.75] }}
-            transition={{ repeat: Infinity, duration: 3.2, ease: "easeInOut" }}
-            className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-200"
-          >
-            Live
-          </motion.div>
+          <div className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
+            Matching
+          </div>
         </div>
 
         {leadMovie ? (
@@ -915,37 +983,48 @@ function LiveTrendingPanel({
         ) : null}
 
         <div className="space-y-2">
-          {movies.slice(1, 4).map((movie, index) => (
-            <Link
-              key={movie.id}
-              href={`/movies/${movie.id}`}
-              className="group flex items-center gap-3 rounded-2xl border border-white/5 bg-black/20 p-2 transition hover:border-primary/30 hover:bg-white/[0.06]"
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeMoods.map(m => m.id).join('-')}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-2"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/5 text-xs font-black text-zinc-500 group-hover:text-primary">
-                {index + 2}
-              </div>
-              <img
-                src={moviePoster(movie)}
-                alt={movie.title}
-                className="h-14 w-10 rounded-xl object-cover"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-black text-white">
-                  {movie.title}
-                </p>
-                <p className="mt-1 flex items-center gap-2 text-[11px] font-semibold text-zinc-500">
-                  {index === 0 ? (
-                    <TrendingUp className="h-3 w-3 text-primary" />
-                  ) : index === 1 ? (
-                    <Eye className="h-3 w-3 text-primary" />
-                  ) : (
-                    <Clock3 className="h-3 w-3 text-primary" />
-                  )}
-                  {movie.views?.toLocaleString() ?? 0} views
-                </p>
-              </div>
-            </Link>
-          ))}
+              {movies.slice(1, 4).map((movie, index) => (
+                <Link
+                  key={movie.id}
+                  href={`/movies/${movie.id}`}
+                  className="group flex items-center gap-3 rounded-2xl border border-white/5 bg-black/20 p-2 transition hover:border-primary/30 hover:bg-white/[0.06]"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/5 text-xs font-black text-zinc-500 group-hover:text-primary">
+                    {index + 2}
+                  </div>
+                  <img
+                    src={moviePoster(movie)}
+                    alt={movie.title}
+                    className="h-14 w-10 rounded-xl object-cover"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-black text-white">
+                      {movie.title}
+                    </p>
+                    <p className="mt-1 flex items-center gap-2 text-[11px] font-semibold text-zinc-500">
+                      {index === 0 ? (
+                        <TrendingUp className="h-3 w-3 text-primary" />
+                      ) : index === 1 ? (
+                        <Eye className="h-3 w-3 text-primary" />
+                      ) : (
+                        <Clock3 className="h-3 w-3 text-primary" />
+                      )}
+                      {movie.views?.toLocaleString() ?? 0} views
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         <div className="grid grid-cols-3 gap-2 border-t border-white/10 pt-4">

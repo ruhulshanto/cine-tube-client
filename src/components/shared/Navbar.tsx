@@ -56,7 +56,6 @@ const fullNavItems = [
     href: "/about",
     icon: Info,
     submenu: [
-      { label: "Mission", href: "/about", icon: Target },
       { label: "Our Story", href: "/story", icon: BookOpen },
       { label: "Responsibilities", href: "/responsibilities", icon: Shield },
       { label: "Merch Store", href: "/merch", icon: ShoppingBag },
@@ -203,32 +202,43 @@ export function Navbar() {
               <HiOutlineMenu className="h-6 w-6" />
             </motion.button>
 
-            <Link
-              href="/"
-              className="text-lg font-black uppercase tracking-[-0.04em] text-white sm:text-xl md:text-2xl"
-            >
-              CINE-TUBE
+            <Link href="/" className="group flex items-center">
+              <span
+                style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+                className="text-3xl md:text-4xl text-white tracking-[0.18em] font-normal relative transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:tracking-[0.30em] group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.7)] group-hover:drop-shadow-[0_0_20px_rgba(255,255,255,0.4)] group-hover:drop-shadow-[0_0_40px_rgba(255,255,255,0.15)] after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-2 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-white/0 after:via-white after:to-white/0 after:transition-all after:duration-700 after:rounded-full group-hover:after:w-full group-hover:after:animate-[pulse_2s_infinite]"
+              >
+                CINE-TUBE
+
+                {/* Floating particles */}
+                <span className="absolute inset-0 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200">
+                  <span className="absolute top-0 left-1/4 w-[1px] h-[2px] bg-white/80 rounded-full animate-[float_3s_infinite_0.2s]"></span>
+                  <span className="absolute top-1/2 left-1/3 w-[1px] h-[1px] bg-white/60 rounded-full animate-[float_2.8s_infinite_0.5s]"></span>
+                  <span className="absolute top-1/4 right-1/3 w-[1px] h-[2px] bg-white/70 rounded-full animate-[float_3.2s_infinite_0.3s]"></span>
+                  <span className="absolute top-3/4 left-1/2 w-[1px] h-[1px] bg-white/50 rounded-full animate-[float_2.5s_infinite_0.7s]"></span>
+                  <span className="absolute top-1/3 right-1/4 w-[1px] h-[2px] bg-white/80 rounded-full animate-[float_3.5s_infinite_0.1s]"></span>
+                </span>
+              </span>
             </Link>
           </div>
 
-            <div className="hidden items-center gap-2 md:flex">
-              {navItems.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-white/80 transition hover:bg-white/10 hover:text-white"
-                  aria-label={item.label}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <button
-                onClick={() => setSearchModalOpen(true)}
+          <div className="hidden items-center gap-2 md:flex">
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
                 className="inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-white/80 transition hover:bg-white/10 hover:text-white"
-                aria-label="Search"
+                aria-label={item.label}
               >
-                <Search className="h-4 w-4" />
-              </button>
+                {item.label}
+              </Link>
+            ))}
+            <button
+              onClick={() => setSearchModalOpen(true)}
+              className="inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-white/80 transition hover:bg-white/10 hover:text-white"
+              aria-label="Search"
+            >
+              <Search className="h-4 w-4" />
+            </button>
           </div>
 
           <div className="flex items-center gap-2">

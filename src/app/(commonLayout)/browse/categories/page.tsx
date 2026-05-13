@@ -1,51 +1,214 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { BadgeCheck, Flame, Sparkles, Star, Trophy, Wand2 } from "lucide-react";
+import { BadgeCheck, Flame, Rocket, Star, Trophy, Wand2, ArrowRight, Film } from "lucide-react";
+import { motion } from "framer-motion";
 
 const categories = [
-  { title: "Trending Now", href: "/movies?sortBy=views&sortOrder=desc", icon: Flame },
-  { title: "Top Rated", href: "/movies?sortBy=highest-rated&sortOrder=desc", icon: Star },
-  { title: "Latest Releases", href: "/movies?sortBy=latest&sortOrder=desc", icon: Sparkles },
-  { title: "Most Reviewed", href: "/movies?sortBy=most-reviewed&sortOrder=desc", icon: BadgeCheck },
-  { title: "Premium Picks", href: "/movies?q=premium", icon: Trophy },
-  { title: "Hidden Gems", href: "/movies?sortBy=createdAt&sortOrder=desc", icon: Wand2 },
+  { 
+    title: "Trending Now", 
+    href: "/movies?sortBy=views&sortOrder=desc", 
+    icon: Flame,
+    desc: "The hottest titles currently capturing the global spotlight.",
+    color: "from-orange-500/20 to-red-500/20"
+  },
+  { 
+    title: "Top Rated", 
+    href: "/movies?sortBy=highest-rated&sortOrder=desc", 
+    icon: Star,
+    desc: "Critically acclaimed masterpieces with the highest audience scores.",
+    color: "from-yellow-500/20 to-amber-500/20"
+  },
+  { 
+    title: "Latest Releases", 
+    href: "/movies?sortBy=latest&sortOrder=desc", 
+    icon: Rocket,
+    desc: "Fresh from the studio. Be the first to watch the newest additions.",
+    color: "from-blue-500/20 to-indigo-500/20"
+  },
+  { 
+    title: "Most Reviewed", 
+    href: "/movies?sortBy=most-reviewed&sortOrder=desc", 
+    icon: BadgeCheck,
+    desc: "The films that everyone is talking about and debating.",
+    color: "from-emerald-500/20 to-teal-500/20"
+  },
+  { 
+    title: "Premium Picks", 
+    href: "/movies?q=premium", 
+    icon: Trophy,
+    desc: "Exclusive high-budget productions curated for our elite members.",
+    color: "from-purple-500/20 to-pink-500/20"
+  },
+  { 
+    title: "Hidden Gems", 
+    href: "/movies?sortBy=createdAt&sortOrder=desc", 
+    icon: Wand2,
+    desc: "Underrated cinematic treasures waiting to be discovered by you.",
+    color: "from-zinc-500/20 to-slate-500/20"
+  },
 ];
 
 export default function BrowseCategoriesPage() {
   return (
-    <main className="min-h-screen bg-[#0b0b0b] text-white">
-      <section className="container mx-auto px-6 pb-10 pt-32 md:px-12 lg:px-20">
-        <p className="mb-3 text-[10px] font-black uppercase tracking-[0.28em] text-primary">Browse categories</p>
-        <h1 className="max-w-4xl text-4xl font-black uppercase tracking-tighter md:text-6xl">
-          Fast Lanes Into the Catalog
-        </h1>
-        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-zinc-400">
-          Jump straight into popular collections, new drops, and editor-friendly discovery paths.
-        </p>
+    <main className="min-h-screen bg-[#0b0b0b] text-white overflow-x-hidden">
+      {/* Hero */}
+      <section className="relative isolate flex min-h-[85vh] items-center justify-center overflow-hidden px-6 pt-32 pb-24 md:px-12 lg:px-20">
+        <div
+          className="absolute inset-0 -z-10 bg-cover bg-center transition-transform duration-[20s] scale-105"
+          style={{
+            backgroundImage:
+              "linear-gradient(to top, #0b0b0b 5%, rgba(11,11,11,0.6) 40%, rgba(11,11,11,0.2)), url('https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=2200&auto=format&fit=crop')",
+          }}
+        />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(229,9,20,0.1)_0%,transparent_70%)]" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/10 via-transparent to-[#0b0b0b]" />
+
+        <div className="relative max-w-4xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <p className="mb-6 text-xs font-black uppercase tracking-[0.4em] text-primary">
+              Curated Collections
+            </p>
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+            className="text-6xl font-normal leading-[1.1] tracking-wider md:text-8xl lg:text-9xl"
+          >
+            Fast Lanes Into <br />
+            <span className="bg-gradient-to-r from-primary via-white to-primary bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(229,9,20,0.4)]">The Catalog</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mt-8 mx-auto max-w-2xl text-lg leading-relaxed text-zinc-300 md:text-xl md:leading-9"
+          >
+            Jump straight into our most popular collections. Whether you want 
+            the latest hits or hidden masterpieces, we have a path ready for you.
+          </motion.p>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="mt-12 flex flex-wrap items-center justify-center gap-5"
+          >
+            <Button asChild variant="netflix" size="lg" className="h-14 rounded-full px-12 text-base font-black uppercase tracking-widest shadow-[0_0_30px_rgba(229,9,20,0.3)] hover:shadow-[0_0_50px_rgba(229,9,20,0.5)]">
+              <Link href="#collections">Browse Collections</Link>
+            </Button>
+          </motion.div>
+        </div>
+
+        {/* Center bottom scroll hint */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
+           <div className="h-10 w-[1px] bg-gradient-to-b from-primary to-transparent" />
+        </div>
       </section>
 
-      <section className="container mx-auto grid gap-4 px-6 pb-20 md:grid-cols-2 md:px-12 lg:grid-cols-3 lg:px-20">
-        {categories.map((category) => {
-          const Icon = category.icon;
-          return (
-            <Link
-              key={category.title}
-              href={category.href}
-              className="rounded-2xl border border-white/10 bg-white/10 p-6 backdrop-blur-md transition hover:border-primary/40 hover:bg-white/15"
-            >
-              <Icon className="mb-6 h-7 w-7 text-primary" />
-              <h2 className="text-2xl font-black tracking-tight">{category.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-zinc-400">Open this collection in Explore with matching sorting.</p>
-            </Link>
-          );
-        })}
+      {/* Categories Grid */}
+      <section id="collections" className="relative container mx-auto px-6 py-32 md:px-12 lg:px-20">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px w-2/3 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          className="mb-20 text-center"
+        >
+          <p className="mb-4 text-xs font-black uppercase tracking-[0.4em] text-primary">Discovery</p>
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="text-4xl font-normal tracking-wider md:text-6xl uppercase">Our Top Collections</h2>
+        </motion.div>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {categories.map((category, i) => {
+            const Icon = category.icon;
+            return (
+              <motion.div
+                key={category.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+              >
+                <Link
+                  href={category.href}
+                  className="group relative flex h-full flex-col overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-white/[0.05] to-transparent p-10 backdrop-blur-xl transition-all duration-300 hover:border-primary/40 hover:bg-white/[0.08]"
+                >
+                  {/* Icon with hover color transition */}
+                  <div className="mb-10 flex h-16 w-16 items-center justify-start transition-transform duration-500 group-hover:scale-110">
+                    <Icon className="h-10 w-10 text-white transition-colors duration-300 group-hover:text-primary" />
+                  </div>
+
+                  <h3 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="mb-4 text-3xl font-normal tracking-wide text-white uppercase">
+                    {category.title}
+                  </h3>
+                  
+                  <p className="mb-10 text-sm leading-relaxed text-zinc-400">
+                    {category.desc}
+                  </p>
+
+                  <div className="mt-auto flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
+                    Enter Collection <ArrowRight className="h-3 w-3" />
+                  </div>
+
+                  {/* Corner Accent */}
+                  <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-primary/5 blur-2xl transition-all group-hover:bg-primary/20" />
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
       </section>
 
-      <div className="container mx-auto px-6 pb-20 md:px-12 lg:px-20">
-        <Button asChild variant="netflix" className="rounded-2xl font-black uppercase tracking-widest">
-          <Link href="/movies">Explore all films</Link>
-        </Button>
+      {/* Global Explorer CTA */}
+      <section className="container mx-auto px-6 pb-32 md:px-12 lg:px-20">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          className="relative overflow-hidden rounded-[3rem] border border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.03] p-12 backdrop-blur-xl md:p-20 text-center"
+        >
+          <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-primary/20 blur-[100px]" />
+          <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-primary/10 blur-[80px]" />
+          
+          <div className="relative flex flex-col items-center gap-8">
+            <div className="max-w-2xl">
+              <div className="mb-6 flex items-center justify-center gap-3 text-sm font-black uppercase tracking-[0.3em] text-primary">
+                <Film className="h-5 w-5" />
+                Cinema Library
+              </div>
+              <h2 style={{ fontFamily: "'Bebas Neue', sans-serif" }} className="text-5xl font-normal tracking-wide md:text-7xl">
+                The full story <span className="text-primary">awaits</span> you
+              </h2>
+              <p className="mt-6 text-base text-zinc-400 md:text-lg">
+                Explore every title in our massive database. Filter by year, rating, 
+                and platform to find exactly what you want to watch tonight.
+              </p>
+            </div>
+            <Button asChild variant="netflix" size="lg" className="h-14 rounded-full px-12 text-base font-black uppercase tracking-widest shadow-[0_0_30px_rgba(229,9,20,0.3)]">
+              <Link href="/movies">Explore All Films</Link>
+            </Button>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Decorative footer element */}
+      <div className="flex justify-center pb-12">
+        <Film className="h-5 w-5 text-primary/40 animate-pulse" />
       </div>
     </main>
   );
+}
+
+// Utility for conditional class merging (if not already in your utils)
+function cn(...inputs: any[]) {
+  return inputs.filter(Boolean).join(" ");
 }
