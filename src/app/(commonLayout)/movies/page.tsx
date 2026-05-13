@@ -126,6 +126,7 @@ function MoviesPageContent() {
   const minRatingParam = searchParams.get("minRating") ?? "";
   const releaseYearParam = searchParams.get("releaseYear") ?? "";
   const streamingPlatformParam = searchParams.get("streamingPlatform") ?? "";
+  const pricingTypeParam = searchParams.get("pricingType") ?? "";
   const sortByParam = searchParams.get("sortBy") ?? "createdAt";
   const sortOrderParam = searchParams.get("sortOrder") ?? "desc";
 
@@ -185,6 +186,7 @@ function MoviesPageContent() {
       minRating?: string;
       releaseYear?: string;
       streamingPlatform?: string;
+      pricingType?: string;
       sortBy?: string;
       sortOrder?: string;
       page?: string;
@@ -211,6 +213,11 @@ function MoviesPageContent() {
       if (next.streamingPlatform)
         params.set("streamingPlatform", next.streamingPlatform);
       else params.delete("streamingPlatform");
+    }
+
+    if (next.pricingType !== undefined) {
+      if (next.pricingType) params.set("pricingType", next.pricingType);
+      else params.delete("pricingType");
     }
 
     if (next.sortBy !== undefined) params.set("sortBy", next.sortBy);
@@ -253,6 +260,7 @@ function MoviesPageContent() {
       minRatingParam,
       releaseYearParam,
       streamingPlatformParam,
+      pricingTypeParam,
       sortByParam,
       sortOrderParam,
     ],
@@ -269,6 +277,7 @@ function MoviesPageContent() {
         ...(streamingPlatformParam
           ? { streamingPlatform: streamingPlatformParam }
           : {}),
+        ...(pricingTypeParam ? { pricingType: pricingTypeParam } : {}),
       }),
     placeholderData: keepPreviousData,
   });
@@ -323,7 +332,7 @@ function MoviesPageContent() {
         <div className="relative z-50 mb-12 rounded-xl border border-white/10 bg-white/[0.02] px-6 py-6">
           <div className="flex items-center justify-between mb-5">
             <h3 className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-400">Filters</h3>
-            {(genreParam || minRatingParam || releaseYearParam || streamingPlatformParam) && (
+            {(genreParam || minRatingParam || releaseYearParam || streamingPlatformParam || pricingTypeParam) && (
               <button
                 onClick={() => {
                   setSearchTerm("");
@@ -331,7 +340,7 @@ function MoviesPageContent() {
                   setStreamingPlatform("");
                   updateUrlFromBrowseState({
                     q: "", genre: "", minRating: "", releaseYear: "",
-                    streamingPlatform: "", sortBy: "createdAt", sortOrder: "desc", page: "1"
+                    streamingPlatform: "", pricingType: "", sortBy: "createdAt", sortOrder: "desc", page: "1"
                   });
                 }}
                 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-zinc-500 hover:text-primary transition-colors duration-200"
@@ -349,6 +358,20 @@ function MoviesPageContent() {
               onChange={(v) => updateUrlFromBrowseState({ genre: v, page: "1" })}
               options={GENRE_OPTIONS}
               placeholder="All Genres"
+              className="w-full"
+            />
+
+            <PremiumDropdown
+              label="Access Type"
+              value={pricingTypeParam}
+              onChange={(v) => updateUrlFromBrowseState({ pricingType: v, page: "1" })}
+              options={[
+                { label: "All", value: "" },
+                { label: "Free", value: "FREE" },
+                { label: "Premium", value: "PREMIUM" },
+                { label: "Rental", value: "RENTAL" },
+              ]}
+              placeholder="All Access"
               className="w-full"
             />
 
@@ -466,7 +489,7 @@ function MoviesPageContent() {
                 title="No Titles Found"
                 description="We couldn't find any results for your current filter configuration."
                 />
-                {(genreParam || minRatingParam || releaseYearParam || streamingPlatformParam) && (
+                {(genreParam || minRatingParam || releaseYearParam || streamingPlatformParam || pricingTypeParam) && (
                 <Button 
                     variant="outline" 
                     className="mt-10 rounded-full border-white/20 px-12 h-14 font-black uppercase tracking-widest text-xs transition-all hover:bg-white/10"
@@ -476,7 +499,7 @@ function MoviesPageContent() {
                     setStreamingPlatform("");
                     updateUrlFromBrowseState({
                         q: "", genre: "", minRating: "", releaseYear: "",
-                        streamingPlatform: "", sortBy: "createdAt", sortOrder: "desc", page: "1"
+                        streamingPlatform: "", pricingType: "", sortBy: "createdAt", sortOrder: "desc", page: "1"
                     });
                     }}
                 >

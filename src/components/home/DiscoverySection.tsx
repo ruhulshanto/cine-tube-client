@@ -296,17 +296,14 @@ export function DiscoverySection({
   }
 
   return (
-    <section className="container mx-auto px-4 md:px-12 lg:px-20 relative">
-      {/* Premium Dark-to-Light Transition */}
-      <div className="absolute -top-32 left-0 right-0 h-32 bg-gradient-to-b from-transparent via-[#0b0b0b]/50 to-[#0b0b0b]" />
-      
+    <section className="container mx-auto px-4 md:px-12 py-28 relative">   
       {/* Enhanced Light-Back Line */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center w-full max-w-6xl">
         <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-[2px] opacity-50" />
         <div className="h-px w-full bg-gradient-to-r from-transparent via-primary/50 to-transparent shadow-[0_0_35px_rgba(229,9,20,0.4)]" />
       </div>
 
-      <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-[#0b0b0b]/75 shadow-[0_32px_90px_-40px_rgba(0,0,0,0.88)] backdrop-blur-2xl mt-12 p-8 md:p-12 lg:p-16">
+      <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-[#0b0b0b]/75 shadow-[0_32px_90px_-40px_rgba(0,0,0,0.88)] backdrop-blur-2xl   p-8 md:p-12 lg:p-16">
         <DiscoveryBackground movies={previewMovies} />
 
         <div className="relative z-10 space-y-12">

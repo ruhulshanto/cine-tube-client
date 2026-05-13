@@ -79,20 +79,17 @@ export default function LoginPage() {
 
   const handleDemoLogin = (role: keyof typeof demoCredentials) => {
     const credentials = demoCredentials[role];
-
-    // Directly submit with demo credentials without updating form fields
     handleLoginSubmit(credentials);
   };
 
   return (
-    <div className="w-full max-w-lg bg-black/60 backdrop-blur-2xl ring-1 ring-white/10 border border-white/10 rounded-[2rem] p-8 md:p-14 shadow-[0_35px_80px_-25px_rgba(0,0,0,0.85)] animate-in fade-in zoom-in duration-500 font-sans">
-      <div className="flex flex-col space-y-3 mb-10">
-        <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white">
+    <div className="w-full max-w-[420px] relative p-6 animate-in fade-in zoom-in duration-700 font-sans mx-auto">
+      <div className="flex flex-col space-y-2 mb-10 text-center">
+        <h1 className="text-4xl font-black tracking-tight text-white drop-shadow-md">
           Sign In
         </h1>
-        <p className="text-zinc-400 text-sm max-w-xl leading-6">
-          Ready to watch? Enter your credentials to access your dashboard
-          instantly.
+        <p className="text-zinc-400 text-sm max-w-xs mx-auto font-medium drop-shadow-sm">
+          Welcome back to Cine-Tube.
         </p>
       </div>
 
@@ -108,8 +105,8 @@ export default function LoginPage() {
           {(field) => (
             <div className="space-y-1.5 group">
               <div className="relative group/field transition-all duration-200">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1 rounded-md bg-white/5 border border-white/5 group-focus-within/field:border-[#e50914]/30">
-                  <Mail className="w-4 h-4 text-zinc-500 group-focus-within/field:text-[#e50914] transition-colors" />
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1 rounded-lg">
+                  <Mail className="w-4 h-4 text-white/50 group-focus-within/field:text-white transition-colors drop-shadow-sm" />
                 </div>
                 <Input
                   id={field.name}
@@ -118,12 +115,12 @@ export default function LoginPage() {
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                   type="email"
-                  placeholder="Email or phone number"
-                  className="h-14 pl-14 pr-4 bg-white/5 border border-white/10 text-white placeholder:text-zinc-500 rounded-2xl transition-all duration-200 focus:bg-white/10 focus:border-[#e50914] focus:ring-2 focus:ring-[#e50914]/30 focus:ring-offset-0 ring-offset-transparent"
+                  placeholder="Email Address"
+                  className="h-12 pl-12 pr-4 bg-black/40 backdrop-blur-xl border border-white/10 text-white placeholder:text-white/40 rounded-xl transition-all duration-300 focus:bg-black/60 focus:border-white/30 focus:ring-4 focus:ring-white/10 shadow-lg"
                 />
               </div>
               {field.state.meta.errors.length > 0 && (
-                <p className="text-xs text-orange-400 font-medium px-1">
+                <p className="text-[11px] text-red-400 font-bold uppercase tracking-wider px-1 drop-shadow-sm">
                   {field.state.meta.errors[0]}
                 </p>
               )}
@@ -135,8 +132,8 @@ export default function LoginPage() {
           {(field) => (
             <div className="space-y-1.5 group">
               <div className="relative group/field transition-all duration-200">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1 rounded-md bg-white/5 border border-white/5 group-focus-within/field:border-[#e50914]/30">
-                  <Lock className="w-4 h-4 text-zinc-400 group-focus-within/field:text-[#e50914] transition-colors" />
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1 rounded-lg">
+                  <Lock className="w-4 h-4 text-white/50 group-focus-within/field:text-white transition-colors drop-shadow-sm" />
                 </div>
                 <Input
                   id={field.name}
@@ -146,11 +143,11 @@ export default function LoginPage() {
                   onChange={(e) => field.handleChange(e.target.value)}
                   type="password"
                   placeholder="Password"
-                  className="h-14 pl-14 pr-4 bg-white/5 border border-white/10 text-white placeholder:text-zinc-500 rounded-2xl transition-all duration-200 focus:bg-white/10 focus:border-[#e50914] focus:ring-2 focus:ring-[#e50914]/30 focus:ring-offset-0 ring-offset-transparent outline-none"
+                  className="h-12 pl-12 pr-4 bg-black/40 backdrop-blur-xl border border-white/10 text-white placeholder:text-white/40 rounded-xl transition-all duration-300 focus:bg-black/60 focus:border-white/30 focus:ring-4 focus:ring-white/10 shadow-lg"
                 />
               </div>
               {field.state.meta.errors.length > 0 && (
-                <p className="text-xs text-orange-400 font-medium px-1">
+                <p className="text-[11px] text-red-400 font-bold uppercase tracking-wider px-1 drop-shadow-sm">
                   {field.state.meta.errors[0]}
                 </p>
               )}
@@ -159,89 +156,86 @@ export default function LoginPage() {
         </form.Field>
 
         {errorMsg && (
-          <div className="p-3 text-sm text-[#e50914] bg-[#e50914]/10 border-l-4 border-[#e50914] rounded-2xl font-medium animate-in slide-in-from-left-2 transition-all">
+          <div className="p-3 text-xs text-red-400 bg-red-500/10 backdrop-blur-md border border-red-500/20 rounded-xl font-bold uppercase tracking-widest animate-in slide-in-from-left-2 shadow-lg">
             {errorMsg}
           </div>
         )}
 
-        <Button
-          type="submit"
-          className="w-full bg-[#e50914] hover:bg-[#ff321f] text-white font-bold h-14 text-lg rounded-2xl shadow-[0_18px_45px_-18px_rgba(229,9,20,0.9)] active:scale-[0.98] transition-all duration-200 group overflow-hidden relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e50914]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-          disabled={isPending}
-        >
-          {isPending ? (
-            "Loading..."
-          ) : (
-            <span className="flex items-center gap-2">
-              Sign In
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </span>
-          )}
-        </Button>
-
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center justify-between pb-2">
           <div className="flex items-center space-x-2 cursor-pointer group">
-            <div className="relative flex items-center justify-center">
-              <Checkbox
-                id="remember"
-                className="border-zinc-500 bg-transparent data-[state=checked]:bg-[#e50914] data-[state=checked]:border-[#e50914] transition-colors"
-              />
-            </div>
+            <Checkbox
+              id="remember"
+              className="border-white/30 bg-black/40 backdrop-blur-md data-[state=checked]:bg-white data-[state=checked]:text-black data-[state=checked]:border-white transition-colors"
+            />
             <label
               htmlFor="remember"
-              className="text-xs text-zinc-500 cursor-pointer group-hover:text-zinc-400 transition-colors"
+              className="text-xs font-medium text-white/70 cursor-pointer group-hover:text-white transition-colors drop-shadow-sm"
             >
               Remember me
             </label>
           </div>
           <Link
             href="/forgot-password"
-            className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="text-xs font-medium text-white/70 hover:text-white transition-colors drop-shadow-sm"
           >
             Forgot password?
           </Link>
         </div>
+
+        <Button
+          type="submit"
+          className="w-full bg-white hover:bg-zinc-200 text-black font-black h-12 text-sm uppercase tracking-[0.1em] rounded-xl shadow-[0_10px_40px_-10px_rgba(255,255,255,0.3)] active:scale-[0.98] transition-all duration-300 group"
+          disabled={isPending}
+        >
+          {isPending ? (
+            <span className="flex items-center gap-2">
+              <div className="h-4 w-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+              Verifying...
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              Sign In
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </span>
+          )}
+        </Button>
       </form>
 
-      <div className="mt-6 border-t border-white/10 pt-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="mt-8">
+        <p className="text-[10px] text-white/50 font-bold uppercase tracking-[0.2em] text-center mb-4 drop-shadow-sm">
+          Quick Access (Demo)
+        </p>
+        <div className="grid grid-cols-2 gap-3">
           <Button
             type="button"
             variant="outline"
-            className="h-12 rounded-2xl text-white border border-white/15 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-200"
+            className="h-10 rounded-lg text-xs font-bold text-white border-white/20 bg-black/40 backdrop-blur-md hover:bg-white hover:text-black hover:border-white transition-all duration-300 shadow-lg"
             disabled={isPending}
             onClick={() => handleDemoLogin("admin")}
           >
-            Login as Admin
+            Admin Access
           </Button>
           <Button
             type="button"
             variant="outline"
-            className="h-12 rounded-2xl text-white border border-white/15 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-200"
+            className="h-10 rounded-lg text-xs font-bold text-white border-white/20 bg-black/40 backdrop-blur-md hover:bg-white hover:text-black hover:border-white transition-all duration-300 shadow-lg"
             disabled={isPending}
             onClick={() => handleDemoLogin("user")}
           >
-            Login as User
+            User Access
           </Button>
         </div>
       </div>
 
-      <div className="mt-8 text-sm text-zinc-500 space-y-3">
-        <p>
+      <div className="mt-10 text-center">
+        <p className="text-white/70 text-sm font-medium drop-shadow-sm">
           New to Cine-Tube?{" "}
           <Link
             href="/register"
-            className="text-white font-semibold hover:text-[#ffb5a0] transition-colors"
+            className="text-white font-black hover:underline underline-offset-4 transition-all ml-1"
           >
-            Create an account.
+            Join Now
           </Link>
-        </p>
-        <p className="text-xs leading-relaxed">
-          This page is protected by Google reCAPTCHA to ensure you&apos;re not a
-          bot.
-          <span className="text-blue-500 hover:underline cursor-pointer ml-1">
-            Learn more.
-          </span>
         </p>
       </div>
     </div>

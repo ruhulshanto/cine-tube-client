@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import type { ApiResponse } from "@/types/api.types";
@@ -26,9 +26,19 @@ export default function Home() {
     queryFn: () => getMovies({ searchTerm: "spider", limit: "50" }),
   });
 
+  const { data: narutoData } = useQuery<ApiResponse<Movie[]>>({
+    queryKey: ["movies", "hero", "naruto"],
+    queryFn: () => getMovies({ searchTerm: "Naruto: Ghost of the Uchiha", limit: "1" }),
+  });
+
   const { data: favoriteBrandData } = useQuery<ApiResponse<Movie[]>>({
     queryKey: ["movies", "favorite", "brand-new-day"],
     queryFn: () => getMovies({ searchTerm: "brand new day", limit: "50" }),
+  });
+
+  const { data: yourNameData } = useQuery<ApiResponse<Movie[]>>({
+    queryKey: ["movies", "hero", "your-name"],
+    queryFn: () => getMovies({ searchTerm: "Your Name", limit: "1" }),
   });
 
   const { data: topRatedData, isLoading: topRatedLoading } = useQuery<
@@ -62,6 +72,8 @@ export default function Home() {
 
   const favoriteFirst = pickFavoriteFirst([
     ...(favoriteSpiderData?.data ?? []),
+    ...(narutoData?.data ?? []),
+    ...(yourNameData?.data ?? []),
     ...(favoriteBrandData?.data ?? []),
   ] as Movie[]);
 

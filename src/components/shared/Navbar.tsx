@@ -194,12 +194,34 @@ export function Navbar() {
                   setDrawerOpen(true);
                 }
               }}
-              whileHover={{ scale: 1.3 }}
-              whileTap={{ scale: 0.95 }}
-              className="group inline-flex h-12 w-12 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all duration-200 hover:bg-white/20 hover:border-white/30"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="group relative inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all duration-300 hover:bg-white/20 hover:border-white/40 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
               aria-label={mobileOpen || drawerOpen ? "Close menu" : "Open menu"}
             >
-              <HiOutlineMenu className="h-6 w-6" />
+              <AnimatePresence mode="wait">
+                {mobileOpen || drawerOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
+                    animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                    exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                  >
+                    <X className="h-6 w-6 text-primary" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ opacity: 0, rotate: 90, scale: 0.5 }}
+                    animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                    exit={{ opacity: 0, rotate: -90, scale: 0.5 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                  >
+                    <HiOutlineMenu className="h-6 w-6" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.button>
 
             <Link href="/" className="group flex items-center">
