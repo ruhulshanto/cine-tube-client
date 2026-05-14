@@ -148,7 +148,7 @@ export function Footer() {
               Stay in the loop
             </p>
             <p className="mt-2 text-sm leading-6 text-zinc-400">
-              New releases, curated picks, and platform updates — delivered
+              New releases, curated picks, and platform updates delivered
               weekly. No spam, ever.
             </p>
             <div className="mt-4 flex overflow-hidden rounded-xl border border-white/10 bg-black/30 focus-within:border-primary/40 transition-colors">
